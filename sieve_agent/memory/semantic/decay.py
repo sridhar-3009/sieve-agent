@@ -19,14 +19,14 @@ a magic constant.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 DEFAULT_HALF_LIFE_DAYS = 30.0
 ARCHIVE_THRESHOLD = 0.05  # relevance below this at consolidation time -> archive
 
 
 def _parse(ts: str) -> datetime:
-    return datetime.fromisoformat(ts).replace(tzinfo=timezone.utc)
+    return datetime.fromisoformat(ts).replace(tzinfo=UTC)
 
 
 def relevance_score(
@@ -36,7 +36,7 @@ def relevance_score(
     now: datetime | None = None,
     half_life_days: float = DEFAULT_HALF_LIFE_DAYS,
 ) -> float:
-    now = now or datetime.now(timezone.utc)
+    now = now or datetime.now(UTC)
     days_idle = max(0.0, (now - _parse(last_accessed_at)).total_seconds() / 86400)
     recency = confidence * math.exp(-math.log(2) * days_idle / half_life_days)
     access_bonus = math.log1p(access_count) * 0.05  # frequently-touched facts get a small floor

@@ -61,9 +61,15 @@ def consolidate_if_due(
     except Exception:
         return 0  # never lose the log — it stays unconsolidated for next time
 
+    stored = 0
     for fact in distilled.get("facts", []):
         if fact.get("subject") and fact.get("content"):
-            facts.add(fact["subject"], fact["content"], source="consolidation")
+            # SqliteFactStore.add() reports its write-gate verdict as a string
+            # ("stored"/"not stored — ..."); other backends (SupabaseFactStore)
+            # still return None and never reject, so treat that as stored too.
+            outcome = facts.add(fact["subject"], fact["content"], source="consolidation")
+            if outcome is None or outcome.startswith("stored"):
+                stored += 1
     if distilled.get("episode"):
         episodes.add(distilled["episode"], happened_at=date.today().isoformat())
 
@@ -72,4 +78,4 @@ def consolidate_if_due(
         [r["id"] for r in rows],
     )
     conn.commit()
-    return len(distilled.get("facts", []))
+    return stored

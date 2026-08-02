@@ -18,7 +18,9 @@ from sieve_agent.tools.registry import Tool
 
 def make_tool(memory: Memory) -> Tool:
     def save_note(subject: str, content: str) -> str:
-        outcome = memory.facts.add(subject, content, source="user")
+        # SqliteFactStore.add() reports its write-gate verdict as a string;
+        # other backends (SupabaseFactStore) return None and never reject.
+        outcome = memory.facts.add(subject, content, source="user") or "stored"
         return f"'{subject}': {content} -> {outcome}"
 
     return Tool(

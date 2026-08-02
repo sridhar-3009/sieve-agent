@@ -159,6 +159,39 @@ def test_a_conversation_worth_no_facts_still_marks_the_log_done(memory):
     assert unconsolidated(memory.conn) == 0
 
 
+# ---------- the write gate applies here too
+
+
+def test_the_returned_count_reflects_what_the_write_gate_actually_kept(memory):
+    """A distilled fact still has to clear the write gate (write_gate.py) —
+    the summarizer's own 'worth remembering in a month' instruction is a
+    request, not a guarantee. The return value is what the dashboard shows
+    as 'new facts from consolidation', so it must count what actually landed,
+    not what the model merely proposed."""
+    add_exchanges(memory.conn, 3)
+    mixed = json.dumps({
+        "facts": [{"subject": "Alex", "content": "Alex prefers morning meetings."},
+                  {"subject": "chitchat", "content": "ok"}],  # rejected: too short/vague
+        "episode": "Planned the Acme demo with Alex.",
+    })
+    assert run(memory, [response([text_block(mixed)])]) == 1
+    stored = [r["subject"] for r in memory.conn.execute("SELECT subject FROM facts").fetchall()]
+    assert stored == ["alex"]
+
+
+def test_a_fact_store_backend_without_a_write_gate_still_counts_as_stored(memory):
+    """Not every semantic store has a write gate — SupabaseFactStore.add()
+    returns None and never rejects. consolidate_if_due must not crash on a
+    None return, and must still count it as stored."""
+    class NoGateStore:
+        def add(self, subject, content, source="user"):
+            return None  # SupabaseFactStore's exact contract
+
+    memory.facts = NoGateStore()
+    add_exchanges(memory.conn, 3)
+    assert run(memory, [response([text_block(DISTILLED)])]) == 2
+
+
 # ---------- bookkeeping: the expensive mistakes
 
 
