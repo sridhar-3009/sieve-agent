@@ -2,10 +2,10 @@
 // Split out of app.js: classic <script>, shared global scope (no build
 // step, no modules). Load order + rules: static/README.md.
 
-// --- Architecture: a calm live SVG that mirrors the whiteboard's structure
-// (Harness wraps the ephemeral run · Loop is a cycle · memory feeds up through
-// the gate · LLM Ops is a separate loop). Deliberately few arrows + lots of
-// air — the detail lives in each tab. Every node is live and clickable.
+// --- Architecture: a calm live SVG of the system's shape (Harness wraps the
+// ephemeral run · Loop is a cycle · memory feeds up through the gate · Ops is
+// a separate loop). Deliberately few arrows + lots of air — the detail lives
+// in each tab. Every node is live and clickable.
 // DO NOT rewrite this chart. The data-node/data-edge ids each box emits drive
 // the live animation via the STAGE map below — keep the two in sync.
 function archSVG(d){

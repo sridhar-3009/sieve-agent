@@ -27,7 +27,6 @@ frontend.
 | `show_trace.py` | `sieve_agent trace` — reading those files back in the terminal. |
 | `release_gate.py` | `make gate`: deterministic must pass, judge must clear the threshold. |
 | `brief.py` | The morning brief. |
-| `whiteboard/` | Excalidraw generators for the architecture diagrams in `docs/`. |
 
 ## Which way the arrows point
 

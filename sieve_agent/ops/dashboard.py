@@ -580,7 +580,7 @@ def tools_info() -> dict:
                     episode_store = _get_notion_store()
             mem = Memory(conn, settings, None, episode_store=episode_store)
         except Exception:
-            # A misconfigured optional backend (notion/supabase) must not take
+            # A misconfigured optional backend (e.g. notion) must not take
             # the dashboard down — drop the memory-admin tools from the
             # display-only catalog instead.
             mem = None
@@ -617,7 +617,7 @@ def tools_info() -> dict:
     from sieve_agent.tools.experimental import PLANNED
 
     return {"catalog": catalog, "mcp": mcp, "apple_on": settings.apple_tools,
-            "planned": PLANNED}   # whiteboard boxes not wired in yet (coming soon)
+            "planned": PLANNED}   # capabilities not wired in yet (coming soon)
 
 
 def run_query(payload: dict) -> dict:

@@ -43,7 +43,7 @@ def _memory_snapshot(conn: sqlite3.Connection) -> str:
 
 
 def _observer(kind: str, event: dict) -> None:
-    """Show the loop's internals live — the video's 'transparent harness' beat."""
+    """Show the loop's internals live in the terminal as the turn runs."""
     if kind == "tool":
         console.print(f"  [dim]tool · {event['tool']}({event['args']}) → {event['output'][:80]}[/dim]")
     elif kind == "gate":

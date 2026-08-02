@@ -1,56 +1,46 @@
-# Architecture — the whiteboard, refreshed
+# Architecture
 
-The same system as the two whiteboard diagrams from the previous videos
-(the generic Harness/Loop/Memory/LLM-Ops one and the Hermes-specific one),
-now with a file path on every box.
+The full system, with a file path on every box.
 
 ```mermaid
 flowchart TB
-    subgraph GW["Gateway Interface — sieve_agent/gateway/"]
-        CLI["cli.py (default)"]
-        TG["telegram.py (optional)"]
+    classDef persist fill:#1a1a1a,stroke:#888,color:#eee
+
+    U["Message in<br/>(gateway/: cli · telegram · voice · dashboard)"] --> WM
+
+    subgraph TURN["One turn — rebuilt fresh, then discarded"]
+        WM["Working memory<br/>runtime/session.py: SOUL.md + memory + chat history"]
+        WM --> GATE{{"retrieval_gate.py<br/>does this turn need memory?"}}
+        GATE -.->|only if needed| SEM
+        GATE -.->|only if needed| EPI
+        WM --> LLM["LLM call — loop/models.py"]
+        LLM -->|tool call| TOOLS["tools/<br/>create_event · save_note · send_message · ..."]
+        TOOLS -->|result| LLM
+        LLM -->|no more tool calls, or max_iterations| REPLY["Reply"]
     end
 
-    subgraph RUN["Ephemeral Agent Run — everything here is rebuilt per turn"]
-        WM["Working Memory — runtime/session.py<br/>SOUL.md + memory context + chat history"]
-        subgraph LOOP["The Loop — loop/agent.py"]
-            LLM["LLM call<br/>(loop/models.py)"]
-            TOOLS["Tools — tools/<br/>create_event · save_note · send_message"]
-            LLM -->|tool calls| TOOLS -->|results| LLM
-        end
-        WM --> LLM
-        GUARD["end-loop guardrails:<br/>no-tool-call exit · max iterations"]
+    REPLY --> U
+    REPLY -->|log the exchange| DB[("state.db — one SQLite file")]:::persist
+
+    subgraph MEMORY["What persists — sieve_agent/memory/"]
+        SEM["semantic/<br/>facts: write gate, contradiction<br/>resolution, decay-ranked search"]:::persist
+        EPI["episodic/<br/>dated summaries"]:::persist
+        PROC["procedural/<br/>SKILL.md, loaded on keyword match"]:::persist
     end
+    PROC -.-> WM
+    DB --- SEM
+    DB --- EPI
+    DB -->|every N exchanges| CONS{{"consolidation.py"}} --> SEM
+    CONS --> EPI
 
-    GW --> WM
-    LLM -->|reply| GW
-
-    subgraph MEM["Memory — sieve_agent/memory/"]
-        GATE{{"retrieval_gate.py<br/>'does this turn need memory?'"}}
-        PROC["procedural/ — SKILL.md<br/>how to act"]
-        SEM["semantic/ — facts (FTS5,<br/>or Supabase pgvector)"]
-        EPI["episodic/ — dated events"]
-        CONS{{"consolidation.py<br/>'only after N new chats'"}}
-        DB[("state.db — one SQLite file")]
-    end
-
-    WM -.->|every turn| GATE
-    GATE -->|only if needed| SEM & EPI
-    PROC -->|on keyword match| WM
-    GW -->|save messages| DB
-    CONS -->|distill into facts| SEM
-    CONS -->|one episode| EPI
-    SEM & EPI --- DB
-
-    subgraph OPS["LLM Ops — sieve_agent/ops/ + evals/"]
-        TRACE["tracing.py — 1 trace/run<br/>JSONL always · OTel → Phoenix/Langfuse"]
-        DET["evals/deterministic — 0/1<br/>'did the right tool fire?'"]
-        JUDGE["evals/judge — scored %<br/>'was the reply good?'"]
+    subgraph OPS["Ops — sieve_agent/ops/ + evals/"]
+        TRACE["tracing.py<br/>1 JSONL trace per run"]
+        DET["evals/deterministic<br/>0/1, unit-test style"]
+        JUDGE["evals/judge<br/>scored %, LLM-as-judge"]
         RGATE{{"release_gate.py"}}
-        TRACE --> DET & JUDGE --> RGATE -->|eval passed| SHIP["release: new prompt/<br/>model/config version"]
+        DET & JUDGE --> RGATE
     end
-
-    RUN -.->|every event| TRACE
+    TURN -.->|every event| TRACE
 ```
 
 ## Design decisions worth stealing
@@ -75,8 +65,7 @@ flowchart TB
 
 ## What this deliberately is not
 
-Not a framework, not multi-agent, not production. (Still not multi-agent even with
-graph workflows: a graph's `agent_node` is the same loop invoked as one step — no
-peer-to-peer agent messaging, execution follows the edges deterministically.) It's
-the readable blueprint — OpenClaw and Hermes are the products; this is the afternoon
-read that explains them.
+Not a framework, not multi-agent, not production infrastructure. Still not
+multi-agent even with graph workflows: a graph's `agent_node` is the same loop
+invoked as one step, not peer-to-peer agent messaging — execution follows the
+edges deterministically. It's meant to stay small enough to read end to end.

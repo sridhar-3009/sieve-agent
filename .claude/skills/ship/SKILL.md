@@ -20,7 +20,7 @@ description: Commit and push the current work properly — lint, run the release
    - End with: `Co-Authored-By: Claude <the current model's attribution line>`
 5. **Push via a branch and a PR — `git push origin main` will be REJECTED.**
    Since 2026-07-26 `main` requires the `skills-and-evals` check to be green
-   BEFORE a commit can land, and `enforce_admins` is on, so this applies to Sean
+   BEFORE a commit can land, and `enforce_admins` is on, so this applies to the repo owner
    and to Claude equally. There is no bypass and you should not look for one.
 
    ```bash
@@ -28,7 +28,7 @@ description: Commit and push the current work properly — lint, run the release
    git push -u origin HEAD
    gh pr create --fill                    # body already written in step 4
    gh pr checks --watch                   # ~30s
-   gh pr merge --squash --delete-branch   # ONLY Sean's own work, see below
+   gh pr merge --squash --delete-branch   # ONLY the repo owner's own work, see below
    git checkout main && git pull -q
    ```
 
@@ -36,7 +36,7 @@ description: Commit and push the current work properly — lint, run the release
    the guard working, not a broken setup. Don't retry with `--force`; force
    pushes to main are blocked too.
 
-6. **A community PR is never merged here.** This procedure covers Sean's own
+6. **A community PR is never merged here.** This procedure covers the repo owner's own
    work. Merging someone else's PR requires his explicit per-PR go-ahead — see
    the `review-pr` skill's hard rule.
 

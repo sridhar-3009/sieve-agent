@@ -32,7 +32,7 @@ together — see [What's different](#the-three-memory-mechanisms) below.
 - [Quickstart](#quickstart)
 - [Watch the harness run — the dashboard](#watch-the-harness-run--the-dashboard)
 - [Things to try](#things-to-try-each-shows-off-a-pillar)
-- [The architecture maps to the code](#the-architecture-maps-to-the-code)
+- [Where each piece lives](#where-each-piece-lives)
 - [The Loop](#the-loop--reason--act--repeat)
 - [Graph workflows](#graph-workflows--when-a-turn-needs-shape)
 - [Eval, tracing & catching bugs](#eval-tracing--catching-bugs)
@@ -143,10 +143,10 @@ Type these in the chat dock (or `make run`) and watch the dashboard light up:
 | *"Search for the World Cup games still left to play and add each one to my calendar"* | **multi-tool loop engineering** | **Loop** tab shows `iter 8`: `search_web` × N → `create_event` × N |
 | chat from `make run` **and** the browser | one brain, many gateways | the **Gateway** tab tags each message `cli` / `dashboard` |
 
-**The money shot** is the World Cup one. In one turn, Sieve searches the web a few times, reasons
-over the results, and books every remaining match — **8 loop iterations**, live. Needs a free
-`TAVILY_API_KEY` (paste it in **Settings**). Watch the **LOOP** box pulse per cycle. That's loop
-engineering, on tape.
+The World Cup example is the clearest demo of this: in one turn, it searches the web a few
+times, reasons over the results, and books every remaining match — **8 loop iterations** in a
+single turn. Needs a free `TAVILY_API_KEY` (paste it in **Settings**). Watch the iteration count
+climb on the Loop tab as it runs.
 
 ## How is this different from ChatGPT / Claude Desktop?
 
@@ -157,26 +157,38 @@ what the products do under the hood.
 Versus the big open-source assistants (OpenClaw, Hermes)? Same architecture, 1/100th the code.
 Products vs. a readable blueprint.
 
-## The architecture maps to the code
+## Where each piece lives
 
 This diagram renders straight from the README (it's [Mermaid](https://mermaid.js.org/) text, not an
 image — edit it in a PR):
 
 ```mermaid
-flowchart LR
-  GW["Gateway<br/>cli · telegram · voice · dashboard"] --> WM["Working memory<br/>SOUL.md + memory + history"]
-  WM --> LLM
-  subgraph LOOP["The Loop — loop/agent.py"]
-    LLM["LLM"] -->|tool call| TOOLS["Tools<br/>create_event · list_events<br/>search_web · save_note · …"]
-    TOOLS -->|result| LLM
+flowchart TD
+  subgraph IN["Turn comes in"]
+    direction LR
+    U["User message<br/>(cli / telegram / voice / dashboard)"] --> S["Session<br/>runtime/session.py"]
   end
-  LLM -->|reply| REPLY["Reply"] --> GW
-  GATE{{"Retrieval gate<br/>does this turn need memory?"}} -. only if needed .-> WM
-  MEM[("Memory — state.db<br/>SQLite + FTS5<br/>semantic · episodic · procedural")] --> GATE
-  REPLY -. save chat .-> MEM
-  MEM -->|every N chats| CONS["Consolidate → facts"] --> MEM
-  REPLY --> OPS["LLM Ops<br/>trace → eval → gate → release"]
-  OPS -. improved prompt/config .-> WM
+
+  subgraph MEM["Memory — state.db (SQLite + FTS5)"]
+    direction LR
+    SEM["Semantic<br/>facts, gate, timeline"]
+    EPI["Episodic<br/>dated summaries"]
+    PRO["Procedural<br/>SKILL.md"]
+  end
+
+  S -->|"gate: does this need memory?"| MEM
+  MEM -->|relevant facts + skills| S
+  S --> AL
+
+  subgraph AL["Agent loop — loop/agent.py"]
+    direction LR
+    R1["reason (LLM)"] -->|tool call| T["run tool"] -->|result| R1
+  end
+
+  AL -->|final reply| OUT["Reply out"]
+  OUT -.->|logged| MEM
+  MEM -.->|every N turns| DIST["distill into facts"] -.-> MEM
+  OUT --> OPS["Ops: trace, eval, release gate"]
 ```
 
 Every box is one module (full version with every file path: [docs/architecture.md](docs/architecture.md)):
@@ -225,16 +237,16 @@ Two guardrails end every turn: the model stops asking for tools (natural end), o
 `max_iterations` (hard stop — it never spins forever). That's "loop engineering": the exit
 conditions, the tool round-trip, and feeding results back as working memory.
 
-**How to show it on camera:**
+**Try it:**
 1. Type *"schedule a swim with Sergey Saturday at 5pm"* in the chat dock and watch the **LOOP**
    box on the Overview diagram light up: reason → `create_event` → reason → reply.
 2. Open the **Loop** tab — every turn is listed with its gate decision, each tool call, the
    **iteration count**, tokens, and dollar cost. A tool-using turn shows `iter 2` (reason,
    act, then reason again to reply); a plain answer shows `iter 1`.
 3. Open the **Ops** tab (or `.sieve/traces/<today>.jsonl`) to read that same turn as raw
-   events in order: `turn_start → gate → llm → tool → llm → turn_end`. That's the loop, on tape.
+   events in order: `turn_start → gate → llm → tool → llm → turn_end`. That's the whole loop, laid out in order.
 
-**The multi-tool loop (the money shot).** One tool is a loop; *chaining* tools is where loop
+**The multi-tool loop.** One tool is a loop; *chaining* tools is where loop
 engineering earns its name. Try:
 
 > *"Search for the World Cup games still left to play and add each one to my calendar."*
@@ -256,19 +268,15 @@ But some work has **shape** — steps that could run *at the same time*, and exp
 around it, and to it*. And it's still no-framework: the entire engine is
 [one readable file](sieve_agent/graph/engine.py), same trick as the loop.
 
+The loop above is one straight path (reason → act → observe → repeat). A graph is a map with
+a fork in it — the shipped example runs two nodes at once, then branches:
+
 ```mermaid
-flowchart LR
-  subgraph L["The loop — one path, step after step"]
-    T["think"] --> A["act"] --> O["observe"] --> T
-  end
-  subgraph G["A graph workflow — a map of steps"]
-    S(["START"]) --> C["classify<br/>small model"]
-    S --> K["check calendar<br/>local read"]
-    C --> R{"route"}
-    K --> R
-    R -. quick .-> Q["quick reply<br/>small model"] --> E(["END"])
-    R -. full .-> F["full agent<br/>THE loop, as a node"] --> E
-  end
+flowchart TD
+  START(["message arrives"]) --> P1["classify<br/>(small model)"] & P2["read today's calendar<br/>(local)"]
+  P1 & P2 --> RT{route}
+  RT -->|small talk| Q["quick reply<br/>(small model, no tools)"] --> DONE(["reply"])
+  RT -->|everything else| F["full agent<br/>(the loop above, as one node)"] --> DONE
 ```
 
 **The shipped example: triage.** Flip `SIEVE_GRAPH_WORKFLOWS=1` (in `.env`, or the
@@ -282,7 +290,7 @@ is the retrieval-gate idea generalized from one gate to a structure. (A graph is
 a swarm of chatting agents: the edges decide everything, deterministically — which is
 why it can be traced and eval'd like everything else here.)
 
-**How to show it on camera:**
+**Try it:**
 1. Switch the flag on, then send *"thanks!"* — on **Overview**, the graph panel lights
    the quick path while the LOOP boxes stay dark: proof the big model never woke.
 2. Send *"schedule a swim Saturday 9am"* — watch `route → full_agent` light up, then the
@@ -292,9 +300,9 @@ why it can be traced and eval'd like everything else here.)
    (`.sieve/traces/<today>.jsonl`) shows the run on tape:
    `graph_start → node_start … route → graph_end`.
 
-## The two hero moments
+## Two things worth understanding first
 
-**1. The retrieval gate.** Most agents hit their memory store on every turn. That's
+**The retrieval gate.** Most agents hit their memory store on every turn. That's
 slow, and worse — irrelevant memories bias answers. Here a cheap model first answers
 one question: *does this message need memory at all?* Watch it in the terminal:
 
@@ -305,7 +313,7 @@ you > when am I meeting Alex?
   gate · retrieve — references user's plans
 ```
 
-**2. Deterministic eval vs LLM-as-judge.** *"Did it create the right calendar event?"*
+**Deterministic eval vs LLM-as-judge.** *"Did it create the right calendar event?"*
 is a unit test — 0 or 1, no model judges it (`make eval`). *"Was the reply helpful?"*
 is a judged score with a threshold (`make eval-judge`). Conflating the two is the most
 common eval mistake; here they're separate suites you can diff. `make gate` runs both
@@ -330,7 +338,7 @@ the most common eval mistake.
 verdict, an **eval-history** table (one row per `make gate`, so you can see it grow), the actual
 per-turn gate decisions, and the raw traces inline.
 
-**The bug workflow (this is the discipline you show on camera):** when you catch a bug by using
+**The bug workflow:** when you catch a bug by using
 the thing live, you fix it AND add a deterministic case so it can never come back. A real example
 from this repo: the agent didn't know the current *time* and asked for it before scheduling
 "in 30 minutes" → fixed in [`session.py`](sieve_agent/runtime/session.py), locked forever by
@@ -340,7 +348,7 @@ the eval history records the run.
 **Spend is permanent:** every LLM call's tokens are appended to `.sieve/usage.jsonl` — an
 append-only ledger that a demo reset never wipes. The **Ops** tab shows the all-time cost, tokens,
 and a per-day / per-provider breakdown (dollar cost is estimated from tokens, which are the ground
-truth). So the number you show on camera is your real running total, not a per-session guess.
+truth). So that number is always your real running total, not a per-session guess.
 
 **Tracing is always on:** every turn appends readable lines to `.sieve/traces/<date>.jsonl`
 (zero setup) — a trace is just "what happened, in order." For span-waterfall views:
@@ -353,7 +361,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 make run
 
 Langfuse cloud speaks the same OTel toggle.
 
-## Recording a clean demo
+## Resetting to a clean state
 
 ```bash
 python scripts/demo_seed.py --yes      # resets .sieve to a tidy, curated state (--yes required)
@@ -548,7 +556,6 @@ The point of a teaching repo is a readable core; these come alive one at a time,
 
 | Default (zero setup) | Upgrade | How |
 |---|---|---|
-| SQLite FTS5 keyword memory | Supabase pgvector semantic search | `SIEVE_SEMANTIC_STORE=supabase` + [sql/init_supabase.sql](sql/init_supabase.sql) |
 | Mock calendar (ICS + SQLite) | Apple / Google Calendar | `SIEVE_APPLE_CALENDAR=1` (macOS) or `SIEVE_GOOGLE_CALENDAR=1` with `pip install -e '.[gcal]'` — the tool schema stays |
 | Hand-built memory pillars | mem0 / Letta / Zep | production frameworks that automate what this repo teaches |
 

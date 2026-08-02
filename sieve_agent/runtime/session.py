@@ -1,7 +1,7 @@
 """Ephemeral Agent Run — assembles working memory for each turn.
 
-The inner box on the whiteboard: everything here is rebuilt per run and thrown
-away. What persists lives in sieve_agent/memory. Working memory =
+Everything here is rebuilt per run and thrown away. What persists lives in
+sieve_agent/memory. Working memory =
 
     system prompt (SOUL.md)            ← who Sieve is
   + durable facts & episodes           ← what Sieve remembers (gated!)
@@ -75,9 +75,8 @@ class Session:
                  f"open-source agent harness (github.com/sridhar-3009/sieve-agent).")]
 
         if self.memory is not None:
-            # Hero moment #1: a cheap judge decides IF we retrieve at all —
-            # default-on retrieval is slow and biases answers (see
-            # memory/retrieval_gate.py for the why).
+            # A cheap judge decides IF we retrieve at all — default-on
+            # retrieval is slow and biases answers (see memory/retrieval_gate.py).
             retrieved = self.memory.gated_retrieve(user_message, notify=notify)
             if retrieved:
                 parts.append("\nRelevant memory:\n" + retrieved)

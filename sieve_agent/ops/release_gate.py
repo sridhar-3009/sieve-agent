@@ -1,4 +1,4 @@
-"""Release gate — the diamond before "Release" on the whiteboard.
+"""Release gate — the last check before you'd call a change "shipped".
 
 Changed the prompt? Swapped the model? Tuned retrieval top-k? Run the gate:
 

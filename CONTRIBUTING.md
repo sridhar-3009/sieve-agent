@@ -29,7 +29,7 @@ Good places to add real value:
 - **Gateways** (`sieve_agent/gateway/`): receive/send for a new channel (WhatsApp, Discord, Slack,
   email). Keep it to one file; the CLI gateway is the reference.
 - **Memory stores** (`sieve_agent/memory/semantic/`): match the `add`/`search` interface of
-  `SqliteFactStore`. The Supabase adapter is the reference.
+  `SqliteFactStore`.
 - **Tools** (`sieve_agent/tools/`): a new capability the agent can call. Follow `calendar.py` and the
   `new-tool` skill — schema, safe execution, honest output, and a deterministic eval.
 

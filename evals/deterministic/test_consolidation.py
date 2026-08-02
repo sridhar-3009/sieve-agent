@@ -1,4 +1,4 @@
-"""DETERMINISTIC EVAL — the diamond on the whiteboard: consolidate, but only sometimes.
+"""DETERMINISTIC EVAL — consolidate, but only sometimes.
 
 `consolidation.py` is the second half of the Memory pillar and, like the
 retrieval gate, it had no test. It answers "when does a chat become a memory?"
@@ -180,12 +180,13 @@ def test_the_returned_count_reflects_what_the_write_gate_actually_kept(memory):
 
 
 def test_a_fact_store_backend_without_a_write_gate_still_counts_as_stored(memory):
-    """Not every semantic store has a write gate — SupabaseFactStore.add()
-    returns None and never rejects. consolidate_if_due must not crash on a
-    None return, and must still count it as stored."""
+    """SqliteFactStore.add() is the only fact-store implementation today, but
+    the interface doesn't require a write-gate verdict string — a simpler
+    store could just return None and never reject. consolidate_if_due must
+    not crash on a None return, and must still count it as stored."""
     class NoGateStore:
         def add(self, subject, content, source="user"):
-            return None  # SupabaseFactStore's exact contract
+            return None
 
     memory.facts = NoGateStore()
     add_exchanges(memory.conn, 3)

@@ -27,7 +27,7 @@ default path for chat; graphs are opt-in per workflow.
 of agent. A node MAY be a sub-agent (a scoped `run_loop` call), but most nodes are plain
 functions or single LLM calls. No peer-to-peer agent messaging, no swarm — execution
 follows the edges, deterministically. That determinism is the point: you can trace it,
-eval it, and explain it on a whiteboard.
+eval it, and draw it as a static diagram that never drifts from the code.
 
 ## 2. Decision: no LangGraph
 

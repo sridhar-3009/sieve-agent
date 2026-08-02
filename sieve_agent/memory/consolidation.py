@@ -1,6 +1,6 @@
 """Consolidation — distilling chats into durable memory, but only sometimes.
 
-The whiteboard's diamond: "only consolidate after N new chats". Running a
+The rule: "only consolidate after N new chats". Running a
 summarizer after every message is wasteful and noisy; batching N exchanges
 gives the summarizer enough context to extract facts worth keeping.
 
@@ -65,8 +65,9 @@ def consolidate_if_due(
     for fact in distilled.get("facts", []):
         if fact.get("subject") and fact.get("content"):
             # SqliteFactStore.add() reports its write-gate verdict as a string
-            # ("stored"/"not stored — ..."); other backends (SupabaseFactStore)
-            # still return None and never reject, so treat that as stored too.
+            # ("stored"/"not stored — ..."); a fact-store backend with no
+            # write gate concept could return None instead — count that as
+            # stored too, since it never rejects anything.
             outcome = facts.add(fact["subject"], fact["content"], source="consolidation")
             if outcome is None or outcome.startswith("stored"):
                 stored += 1

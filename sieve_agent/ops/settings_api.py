@@ -173,8 +173,8 @@ def apply_settings(payload: dict) -> dict:
     error = browser_agent.rebuild()
     if error:
         return {"error": error}
-    # a model/provider switch is a RELEASE event (the whiteboard's "new model
-    # config" box) — record it in the trace so brain swaps are auditable
+    # a model/provider switch is a release-worthy config change —
+    # record it in the trace so brain swaps are auditable
     browser_agent.current().tracer.event("config", {
         "from": before,
         "to": {"provider": provider, "model": updates["SIEVE_MODEL"],

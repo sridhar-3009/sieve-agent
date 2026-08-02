@@ -51,8 +51,6 @@ class Settings:
     # Consolidate (distill chats into durable facts) only after N new exchanges.
     consolidate_every: int = field(default_factory=lambda: int(os.getenv("SIEVE_CONSOLIDATE_EVERY", "6")))
     retrieval_top_k: int = field(default_factory=lambda: int(os.getenv("SIEVE_RETRIEVAL_TOP_K", "4")))
-    # 'sqlite' (default, zero setup) or 'supabase' (pgvector upgrade path — see launch-rag).
-    semantic_store: str = field(default_factory=lambda: os.getenv("SIEVE_SEMANTIC_STORE", "sqlite"))
     # 'sqlite' (default, zero setup) or 'notion' (episodes live in a Notion database).
     episodic_store: str = field(default_factory=lambda: os.getenv("SIEVE_EPISODIC_STORE", "sqlite"))
 

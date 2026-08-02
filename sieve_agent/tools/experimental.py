@@ -1,6 +1,6 @@
-"""Roadmap tools — the whiteboard boxes beyond the flagship task.
+"""Roadmap tools — capabilities beyond the flagship scheduling task.
 
-One of them is now ALIVE: `delegate_task` (the Sub-Agents box) hands a coding
+One of them is now ALIVE: `delegate_task` (sub-agent delegation) hands a coding
 job to pi (https://github.com/earendil-works/pi) — a minimal open-source coding
 agent by Mario Zechner — through its headless print mode (`pi -p "task"`).
 The division of labor is the teaching point: Sieve is the orchestrator (memory,
@@ -167,7 +167,7 @@ def _run_pi_json(cmd: list, workdir: Path, timeout: int, notify):
                                 "tokens_in": tin, "tokens_out": tout})
     return proc.wait(), reply, "".join(stderr_parts), raw, tin, tout, cost
 
-# Still-skeleton boxes: name → what it will do, and its box on the whiteboard.
+# Still-skeleton capabilities: name → what it will do, and its planned category.
 PLANNED = [
     {"name": "run_command", "box": "Terminal tool",
      "description": "Run a shell command in a sandbox and read the output — Hermes's 'Terminal' "

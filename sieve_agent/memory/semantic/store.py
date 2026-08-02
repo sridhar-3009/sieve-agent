@@ -1,9 +1,8 @@
 """Semantic memory — durable facts, keyword-searched with SQLite FTS5.
 
-The Hermes insight from the whiteboard: "keyword top-k, no embedding". For a
-single user's facts, ranked keyword search (BM25) is fast, fully local, and —
-crucially for teaching — you can read the whole index with sqlite3.
-Want vectors? Set SIEVE_SEMANTIC_STORE=supabase (see supabase_store.py).
+Keyword top-k, no embedding model. For a single user's facts, ranked keyword
+search (BM25) is fast, fully local, and — crucially for a repo meant to be
+read — you can inspect the whole index with plain sqlite3.
 
 Three things happen here that a plain "INSERT every fact" store doesn't do:
 

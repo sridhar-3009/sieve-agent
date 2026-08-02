@@ -1,6 +1,6 @@
 """One SQLite file (state.db) holds everything Sieve remembers and does.
 
-This mirrors the Hermes approach on the whiteboard: SQLite + FTS5, no server.
+SQLite + FTS5, no server, nothing to run in the background.
 Open it yourself anytime:  sqlite3 .sieve/state.db '.tables'
 """
 

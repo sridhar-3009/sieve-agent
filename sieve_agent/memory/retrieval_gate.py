@@ -1,8 +1,8 @@
-"""HERO MOMENT #1 — the gate that decides WHETHER to retrieve memory at all.
+"""The gate that decides WHETHER to retrieve memory at all.
 
-The top audience question across platforms: "why hit the memory store every
-turn?" Default-on retrieval is (a) slow — an extra search before every reply —
-and (b) worse: irrelevant memories bias the answer ("over-interpretation").
+Default-on retrieval — searching memory before every reply — is (a) slow, an
+extra search on every turn, and (b) worse: irrelevant memories bias the
+answer ("over-interpretation").
 
 So before touching any store, a cheap fast model answers one question:
     does THIS message need the user's memory?

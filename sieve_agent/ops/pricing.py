@@ -51,7 +51,7 @@ _price_cache: dict[str, tuple[float, float]] = {}
 # gemini-flash undercuts gemini-pro — so pricing per *model* is the only honest
 # way; a provider-level guess made fable-5 look cheaper than opus. Rates are
 # standard short-context list prices (cache/batch discounts not modelled),
-# fact-checked Jul 2026 against each vendor's pricing page. See docs/benchmarks.md.
+# fact-checked Jul 2026 against each vendor's pricing page.
 MODEL_PRICING = {
     # Anthropic — platform.claude.com/docs/.../pricing
     "claude-opus-4-8": (5.0, 25.0),

@@ -1,7 +1,6 @@
 """DETERMINISTIC EVAL — the gather workflow: really parallel, and unable to act.
 
-Two claims this workflow makes, both of which would be embarrassing to make
-falsely on camera:
+Two claims this workflow makes, both worth verifying rather than taking on faith:
 
   1. THE FOUR SCANS RUN AT THE SAME TIME. Not "are drawn side by side" — the
      engine puts them in one wave and a ThreadPoolExecutor runs them together.

@@ -238,7 +238,7 @@ async function runCompare(){
 // a caret. When it finishes (res.result) it flips to the full receipts card.
 // Reuses the shared formatters (renderMarkdown/secs/money).
 // Plain-English reason for the common, expected failure modes — so the arena
-// reads honestly on camera (the raw error stays below, muted).
+// reads honestly at a glance (the raw error stays below, muted).
 function compareErrorReason(err){
   const e = (err || "").toLowerCase();
   if (e.includes("reasoning_effort") || e.includes("/v1/responses")) return "can't call tools — reasoning model, needs the /v1/responses API";

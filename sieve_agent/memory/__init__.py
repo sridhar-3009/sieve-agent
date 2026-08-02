@@ -5,7 +5,7 @@
     episodic    episodes table      what happened, when
 
 Plus the two agents that manage them:
-    retrieval_gate   decides IF a turn needs memory   (hero moment #1)
+    retrieval_gate   decides IF a turn needs memory
     consolidation    distills chats into facts, every N exchanges
 """
 
@@ -57,10 +57,6 @@ class Memory:
 
     @staticmethod
     def _make_fact_store(conn, settings):
-        if settings.semantic_store == "supabase":
-            from sieve_agent.memory.semantic.supabase_store import SupabaseFactStore
-
-            return SupabaseFactStore(settings)
         return SqliteFactStore(conn)
 
     @staticmethod
@@ -148,10 +144,10 @@ class Memory:
         return out
 
     def export_markdown(self) -> None:
-        """Mirror memory to a human-readable MEMORY.md next to state.db — so the
-        whiteboard's `~/.sieve/MEMORY.md` box is literally real, and "your memory
-        is a file you can open" is true. state.db stays the queryable source of
-        truth; this file is a generated view, refreshed after each turn."""
+        """Mirror memory to a human-readable MEMORY.md next to state.db, so
+        "your memory is a file you can open" is literally true. state.db stays
+        the queryable source of truth; this file is a generated view,
+        refreshed after each turn."""
         facts = self.conn.execute(
             "SELECT subject, content FROM facts ORDER BY subject, id"
         ).fetchall()

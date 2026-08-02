@@ -10,7 +10,7 @@ A "case" is one line of `evals/dataset.jsonl`: an input prompt plus its expected
 outcome (`expect_tool` / `expect_in_args` / `expect_min_tool_calls` /
 `setup_fact`). Completion is the honest, judge-free axis — it's the local mirror
 of a tau-bench / SWE-bench style outcome check (did the end-state match), not a
-vibe. See docs/benchmarks.md.
+vibe.
 """
 
 from __future__ import annotations

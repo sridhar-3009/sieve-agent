@@ -1,8 +1,7 @@
-"""Tool registry — the 'Agentic Tools' box on the whiteboard.
+"""Tool registry — how the agent's callable capabilities are declared.
 
 A tool is three things: a name+description the model reads, a JSON schema for
-its arguments, and a Python function that runs. That's it. (Registry pattern
-adapted from launch-agentic-rag's app/agents/tools/registry.py.)
+its arguments, and a Python function that runs. That's it.
 """
 
 from __future__ import annotations

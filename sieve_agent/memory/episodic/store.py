@@ -2,8 +2,8 @@
 
 Semantic memory answers "what do I know?"; episodic answers "what happened
 last Tuesday?". Same SQLite file, but every row carries a date and retrieval
-blends relevance (FTS rank) with recency — the whiteboard's "RAG for
-relevance + SQL for recency".
+blends relevance (FTS rank) with recency: keyword search for relevance,
+plain SQL for recency.
 """
 
 from __future__ import annotations

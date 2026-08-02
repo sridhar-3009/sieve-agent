@@ -9,7 +9,7 @@ description: >
 # Throwaway worktrees for PR testing
 
 Testing a contributor's PR must never disturb the live dashboard on 7777, and it
-must never leave a second copy of Sean's API keys on disk. Both have happened.
+must never leave a second copy of the repo owner's API keys on disk. Both have happened.
 
 ## Setting one up
 
@@ -52,8 +52,8 @@ main `.env` rather than losing it.
 
 New env vars a PR introduces belong in the **main** `.env`, not the worktree's.
 Copy the values across without printing them, and leave switches that would change
-what the live demo shows (e.g. `SIEVE_EPISODIC_STORE`) on their old value — Sean
-films against the local data.
+what the live demo shows (e.g. `SIEVE_EPISODIC_STORE`) on their old value — demos
+run against the local data.
 
 ## Running its dashboard
 
