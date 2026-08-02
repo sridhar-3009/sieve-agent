@@ -1,13 +1,17 @@
 # sieve-agent
 
+[![validate](https://github.com/sridhar-3009/sieve-agent/actions/workflows/validate-skills.yml/badge.svg)](https://github.com/sridhar-3009/sieve-agent/actions/workflows/validate-skills.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+
 **A local-first personal assistant with memory that curates itself.**
 
-**sieve-agent** shows the four pillars behind every serious agent — **Harness · Loop · Memory ·
+sieve-agent shows the four pillars behind every serious agent — **Harness · Loop · Memory ·
 Eval/LLM-Ops** — with the memory pillar rebuilt around one idea: your assistant's memory should
 curate itself, not just grow forever. Most agent memories only ask "does this turn need to
 *read* memory?" before a lookup. Nothing asks the equally important question *before writing*:
 is this candidate worth keeping at all? sieve-agent answers that with three mechanisms working
-together — see [What's different](#the-three-memory-mechanisms) below.
+together — see [the three memory mechanisms](#the-three-memory-mechanisms) below.
 
 - **Local-first.** Your memory is one SQLite file. Open it. Read it. It's yours.
 - **Memory curates itself.** A write gate rejects noise before it's stored; contradicting facts
@@ -17,6 +21,8 @@ together — see [What's different](#the-three-memory-mechanisms) below.
   including live write-gate confidence, supersession, and archived history in the Memory tab.
 - **Eval built in.** Deterministic tests *and* LLM-as-judge, side by side, with a release gate —
   including a dedicated suite for the write gate, contradiction resolution, and decay math.
+
+---
 
 ## Requirements
 
@@ -189,6 +195,15 @@ flowchart TD
   OUT -.->|logged| MEM
   MEM -.->|every N turns| DIST["distill into facts"] -.-> MEM
   OUT --> OPS["Ops: trace, eval, release gate"]
+
+  classDef input fill:#e0edff,stroke:#3b6fe0,color:#132a63,stroke-width:1.5px
+  classDef memory fill:#dcf7e6,stroke:#209a5a,color:#0d3a20,stroke-width:1.5px
+  classDef loop fill:#eee0ff,stroke:#7c3fd6,color:#33144d,stroke-width:1.5px
+  classDef ops fill:#ffe9c7,stroke:#d9821f,color:#4d2e05,stroke-width:1.5px
+  class U,S,IN input
+  class SEM,EPI,PRO,DIST,MEM memory
+  class R1,T,AL loop
+  class OUT,OPS ops
 ```
 
 Every box is one module (full version with every file path: [docs/architecture.md](docs/architecture.md)):
@@ -277,6 +292,15 @@ flowchart TD
   P1 & P2 --> RT{route}
   RT -->|small talk| Q["quick reply<br/>(small model, no tools)"] --> DONE(["reply"])
   RT -->|everything else| F["full agent<br/>(the loop above, as one node)"] --> DONE
+
+  classDef start fill:#e0edff,stroke:#3b6fe0,color:#132a63,stroke-width:1.5px
+  classDef parallel fill:#eee0ff,stroke:#7c3fd6,color:#33144d,stroke-width:1.5px
+  classDef quick fill:#dcf7e6,stroke:#209a5a,color:#0d3a20,stroke-width:1.5px
+  classDef full fill:#ffe9c7,stroke:#d9821f,color:#4d2e05,stroke-width:1.5px
+  class START,DONE start
+  class P1,P2,RT parallel
+  class Q quick
+  class F full
 ```
 
 **The shipped example: triage.** Flip `SIEVE_GRAPH_WORKFLOWS=1` (in `.env`, or the
@@ -563,5 +587,7 @@ The point of a teaching repo is a readable core; these come alive one at a time,
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) — skills need no Python at all; providers, gateways,
 and tools are all self-contained first PRs.
+
+---
 
 MIT — see [LICENSE](LICENSE).

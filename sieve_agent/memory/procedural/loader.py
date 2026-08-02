@@ -2,7 +2,7 @@
 
 Official Anthropic Agent Skills format: YAML frontmatter with `name` and
 `description` (the description doubles as the trigger — no custom `triggers:`
-field, which launch-agent-skills used before the spec settled).
+field needed).
 
 Progressive disclosure, the part that matters:
   1. frontmatter of every skill is always scanned (cheap)

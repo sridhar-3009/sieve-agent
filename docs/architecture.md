@@ -4,8 +4,6 @@ The full system, with a file path on every box.
 
 ```mermaid
 flowchart TB
-    classDef persist fill:#1a1a1a,stroke:#888,color:#eee
-
     U["Message in<br/>(gateway/: cli · telegram · voice · dashboard)"] --> WM
 
     subgraph TURN["One turn — rebuilt fresh, then discarded"]
@@ -20,12 +18,12 @@ flowchart TB
     end
 
     REPLY --> U
-    REPLY -->|log the exchange| DB[("state.db — one SQLite file")]:::persist
+    REPLY -->|log the exchange| DB[("state.db — one SQLite file")]
 
     subgraph MEMORY["What persists — sieve_agent/memory/"]
-        SEM["semantic/<br/>facts: write gate, contradiction<br/>resolution, decay-ranked search"]:::persist
-        EPI["episodic/<br/>dated summaries"]:::persist
-        PROC["procedural/<br/>SKILL.md, loaded on keyword match"]:::persist
+        SEM["semantic/<br/>facts: write gate, contradiction<br/>resolution, decay-ranked search"]
+        EPI["episodic/<br/>dated summaries"]
+        PROC["procedural/<br/>SKILL.md, loaded on keyword match"]
     end
     PROC -.-> WM
     DB --- SEM
@@ -41,6 +39,15 @@ flowchart TB
         DET & JUDGE --> RGATE
     end
     TURN -.->|every event| TRACE
+
+    classDef input fill:#e0edff,stroke:#3b6fe0,color:#132a63,stroke-width:1.5px
+    classDef turn fill:#eee0ff,stroke:#7c3fd6,color:#33144d,stroke-width:1.5px
+    classDef memory fill:#dcf7e6,stroke:#209a5a,color:#0d3a20,stroke-width:1.5px
+    classDef ops fill:#ffe9c7,stroke:#d9821f,color:#4d2e05,stroke-width:1.5px
+    class U input
+    class WM,GATE,LLM,TOOLS,REPLY,TURN turn
+    class SEM,EPI,PROC,DB,CONS,MEMORY memory
+    class TRACE,DET,JUDGE,RGATE,OPS ops
 ```
 
 ## Design decisions worth stealing
@@ -53,9 +60,8 @@ flowchart TB
 - **Deterministic evals and judge evals never mix.** One is a unit test, the other
   is a scored opinion. The release gate requires 100% of the first and a threshold
   on the second.
-- **Every layer has a boring default and a documented upgrade** — FTS5 → pgvector,
-  mock calendar → Google Calendar, JSONL → Phoenix/Langfuse. The default is always
-  zero-signup.
+- **Every layer has a boring default and a documented upgrade** — mock calendar →
+  Google Calendar, JSONL traces → Phoenix/Langfuse. The default is always zero-signup.
 - **Graphs wrap the loop, never replace it.** When a turn needs shape (parallel
   steps, explicit routing), an opt-in graph workflow (`sieve_agent/graph/`) arranges nodes
   around the untouched loop — the `full_agent` node IS `run_loop`. Routers are plain
