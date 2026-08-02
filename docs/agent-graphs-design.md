@@ -1,8 +1,8 @@
 # Agent Graphs — system design
 
 Status: phases 1–3 SHIPPED (engine + triage graph workflow behind
-`SIEVE_GRAPH_WORKFLOWS` + dashboard Graph tab). The content workflow (§4.2) and the
-AutoManus port (§5) remain future work. Two shipped deviations from this doc:
+`SIEVE_GRAPH_WORKFLOWS` + dashboard Graph tab). The content workflow (§4.2) remains
+future work. Two shipped deviations from this doc:
 triage has no `search_memory` fan-out node (the full path's retrieval gate already
 covers it — a parallel prefetch would double-retrieve), and a `gather` fan-in node
 sits before the router so it waits on both parallel branches.
@@ -169,36 +169,6 @@ START → draft (agent_node: writing tools)
 Demonstrates the bounded cycle and the human gate — the two riskiest engine features —
 in a low-stakes personal task.
 
-## 5. AutoManus — lead qualification (use case 1)
-
-Different repo, different constraints. Design here, build separately.
-
-- **Where**: the FastAPI backend (`app-backend-AutoManus`), NOT the Next.js frontend —
-  "AI agents live in the backend" rule. The backend repo is not cloned in this session,
-  so this section is a spec.
-- **How**: port the ~200-line engine pattern into `ai_utils/graph/` (copy, don't share a
-  package — the repos stay independent; the engine is small enough that a fork is
-  cheaper than a shared dependency).
-- **Endpoint**: `POST /api/v1/leads/qualify` (verify_token + business scoping as usual).
-
-```
-START (contact_id, business_id)
-  ├─ fetch_history     (Supabase: whatsapp_messages filtered by agent_id, deals)
-  ├─ research_company  (LLM + web/company enrichment)
-  └─ recent_activity   (last-touch recency, channel, response latency)
-        ↓ (fan-in) → score (LLM node → {score, reasons})
-  route(score):
-      hot  (≥0.8)      → draft_followup (existing follow-up plan machinery) → END
-      warm (0.5–0.8)   → add_to_nurture → END
-      cold (<0.5)      → tag_and_skip   → END
-```
-
-- **Credits**: deduct via the credit service BEFORE the LLM nodes, per repo convention.
-- **Frontend**: one hook (`useLeadQualification`) calling the endpoint; results render
-  on the deal — no graph engine in the frontend at all.
-- **Output contract**: `{score, band, reasons[], action_taken, drafted_message?}` so the
-  UI and the daily "who to chase" brief consume the same shape.
-
 ## 6. Phasing
 
 | phase | deliverable | proves |
@@ -206,7 +176,6 @@ START (contact_id, business_id)
 | 1 | `graph/engine.py` + `nodes.py` + full deterministic eval suite | the mechanism, with zero LLM spend |
 | 2 | `workflows/triage.py` wired behind a flag + tracing events | real value on the live assistant |
 | 3 | `workflows/content.py` | cycles + human gate |
-| 4 | AutoManus backend port + `/leads/qualify` | the pattern travels |
 
 Each phase is one PR (topic branch → gate → squash-merge), shippable alone.
 
@@ -220,4 +189,3 @@ Each phase is one PR (topic branch → gate → squash-merge), shippable alone.
 4. **Routers are code, not LLM calls** — models produce state, functions read it.
 5. **Graphs are opt-in structure around the loop** — `run_loop` untouched; `agent_node`
    composes it. The loop pillar's file does not change.
-6. **Copy the engine into AutoManus** rather than extracting a shared library.

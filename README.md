@@ -18,6 +18,32 @@ together — see [What's different](#the-three-memory-mechanisms) below.
 - **Eval built in.** Deterministic tests *and* LLM-as-judge, side by side, with a release gate —
   including a dedicated suite for the write gate, contradiction resolution, and decay math.
 
+## Requirements
+
+- Python 3.11 or 3.12
+- macOS, Linux, or WSL (voice and Apple Calendar/Mail integration are macOS-only)
+- An API key for one supported provider (Anthropic, OpenAI, Gemini, DeepSeek, and others — see
+  [Quickstart](#quickstart)); most have a free tier large enough to try this
+- [`uv`](https://docs.astral.sh/uv/) (recommended) or plain `pip` + `venv`
+
+## Table of contents
+
+- [The three memory mechanisms](#the-three-memory-mechanisms)
+- [Quickstart](#quickstart)
+- [Watch the harness run — the dashboard](#watch-the-harness-run--the-dashboard)
+- [Things to try](#things-to-try-each-shows-off-a-pillar)
+- [The architecture maps to the code](#the-architecture-maps-to-the-code)
+- [The Loop](#the-loop--reason--act--repeat)
+- [Graph workflows](#graph-workflows--when-a-turn-needs-shape)
+- [Eval, tracing & catching bugs](#eval-tracing--catching-bugs)
+- [Talk to it (voice)](#talk-to-it)
+- [Phone to laptop (Telegram)](#phone-to-laptop)
+- [Google/Apple Calendar](#mirror-created-events-to-google-calendar)
+- [Connect MCP servers](#connect-mcp-servers)
+- [Add skills](#add-skills--yours-or-the-communitys)
+- [Every command](#every-command)
+- [Contributing](#contributing)
+
 ## The three memory mechanisms
 
 Three mechanisms live in [`sieve_agent/memory/semantic/`](sieve_agent/memory/semantic):
@@ -51,7 +77,7 @@ git clone https://github.com/sridhar-3009/sieve-agent && cd sieve-agent
 uv venv && uv pip install -e .          # create the env + install the `sieve-agent` command
 cp .env.example .env                    # pick a provider, paste ONE key
 uv run sieve-agent                      # talk to it in the terminal
-uv run sieve-agent dashboard                   # …or the browser cockpit → localhost:7777
+uv run sieve-agent dashboard            # …or the browser cockpit → localhost:7777
 ```
 
 `uv run sieve-agent …` needs **no venv activation**. Three ways to run it:
@@ -408,9 +434,9 @@ pip install -e '.[gcal]'
 # Keep the downloaded client file OUTSIDE the repo — it is only an input to
 # gcloud, which stores the resulting credentials in ~/.config/gcloud/.
 gcloud auth application-default login \
-  --client-id-file=~/.config/sieve_agent/gcal-client.json \
+  --client-id-file=~/.config/sieve-agent/gcal-client.json \
   --scopes=https://www.googleapis.com/auth/calendar.events
-SIEVE_GOOGLE_CALENDAR=1 sieve_agent
+SIEVE_GOOGLE_CALENDAR=1 sieve-agent
 ```
 
 Nothing secret ever needs to live in the repo: the client file is read once by
