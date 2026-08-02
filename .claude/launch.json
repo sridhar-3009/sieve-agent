@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sieve_agent-dashboard",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "sieve_agent.ops.dashboard"],
+      "port": 7777,
+      "autoPort": false
+    },
+    {
+      "name": "phoenix-traces",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "phoenix.server.main", "serve"],
+      "port": 6006
+    }
+  ]
+}
