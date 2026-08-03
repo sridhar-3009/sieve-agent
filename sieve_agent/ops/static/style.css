@@ -1,15 +1,29 @@
 :root{
-    --bg:#fafaf9;--panel:#ffffff;--line:#e7e6e4;--line2:#d9d8d5;
-    --ink:#21201d;--ink2:#6f6e69;--ink3:#a3a29d;
-    --accent:#5e6ad2;--accent-soft:#eef0fb;
-    --good:#1f7a4d;--good-soft:#e8f4ee;--bad:#c0392b;--bad-soft:#faeceb;
+    /* Manga-panel monochrome: pure black ink on white paper, nothing else.
+       Semantic distinctions (pass vs fail, hot vs idle) are carried by
+       fill-vs-outline, weight, dash-style, and the halftone screen below —
+       never by hue. --accent/--good/--bad are numerically identical to
+       --ink on purpose: "emphasis" means solid ink, not a color choice. */
+    --bg:#ffffff;--panel:#ffffff;--line:#111111;--line2:#111111;
+    --ink:#0a0a0a;--ink2:#4a4a4a;--ink3:#8a8a8a;
+    --accent:#0a0a0a;--accent-soft:#f0f0f0;
+    --good:#0a0a0a;--good-soft:#f0f0f0;--bad:#0a0a0a;--bad-soft:#ffffff;
     --mono:ui-monospace,'SF Mono',Menlo,monospace;
+    /* the halftone screen — manga's substitute for a tinted fill */
+    --dots:radial-gradient(var(--ink) 1.1px,transparent 1.3px);
+    --dots-size:7px 7px;
+    --r:3px;         /* panels stay near-sharp: manga page, not a rounded app */
+    --rpill:99px;     /* tags/badges keep the capsule shape — the one round shape allowed */
+    --bw:2px;         /* bold ink border weight for primary panels */
   }
   @media (prefers-color-scheme:dark){:root{
-    --bg:#101012;--panel:#18181b;--line:#26262a;--line2:#333338;
-    --ink:#ececea;--ink2:#96959f;--ink3:#5f5e66;
-    --accent:#7c8aec;--accent-soft:#20223a;
-    --good:#4cc38a;--good-soft:#12291d;--bad:#e5655a;--bad-soft:#331714;
+    /* night mode = inked page under low light, not a hue shift: black
+       paper, white ink, same rules. */
+    --bg:#08080a;--panel:#0f0f11;--line:#f2f2f0;--line2:#f2f2f0;
+    --ink:#f2f2f0;--ink2:#b5b4b0;--ink3:#6f6e6a;
+    --accent:#f2f2f0;--accent-soft:#1c1c1e;
+    --good:#f2f2f0;--good-soft:#1c1c1e;--bad:#f2f2f0;--bad-soft:#08080a;
+    --dots:radial-gradient(var(--ink) 1.1px,transparent 1.3px);
   }}
   *{box-sizing:border-box;margin:0}
   /* three fixed-height columns, each scrolling independently: the main
@@ -18,8 +32,8 @@
   body{background:var(--bg);color:var(--ink);
        font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
        display:flex;height:100vh;overflow:hidden}
-  nav{width:var(--nav-w,208px);flex-shrink:0;border-right:1px solid var(--line);padding:20px 12px;
-      height:100vh;overflow-y:auto}
+  nav{width:var(--nav-w,208px);flex-shrink:0;border-right:var(--bw) solid var(--line);padding:20px 12px;
+      height:100vh;overflow-y:auto;background:var(--panel)}
   /* drag handles between the three columns + elegant hide/show */
   .resizer{flex-shrink:0;width:5px;height:100vh;cursor:col-resize;background:transparent}
   .resizer:hover,body.resizing .resizer{background:var(--accent-soft)}
@@ -27,84 +41,94 @@
   #nav-toggle{float:right;background:none;border:none;color:var(--ink3);cursor:pointer;font-size:12px;padding:2px 4px;line-height:1}
   #nav-toggle:hover{color:var(--ink)}
   #nav-reopen{display:none;position:fixed;top:12px;left:12px;z-index:25;background:var(--panel);
-    border:1px solid var(--line2);border-radius:8px;color:var(--ink2);width:34px;height:30px;cursor:pointer;font-size:14px}
+    border:var(--bw) solid var(--line);border-radius:var(--r);color:var(--ink);width:34px;height:30px;cursor:pointer;font-size:14px}
   body.nav-hidden #nav,body.nav-hidden #nav-resizer{display:none}
   body.nav-hidden #nav-reopen{display:block}
-  .brand{font-weight:650;font-size:15px;padding:0 10px 4px}
-  .brand small{display:block;color:var(--ink3);font-weight:400;font-size:11px;margin-top:2px}
+  .brand{font-weight:800;font-size:15px;padding:0 10px 8px;letter-spacing:.02em;
+         border-bottom:var(--bw) solid var(--line);margin-bottom:10px}
+  .brand small{display:block;color:var(--ink3);font-weight:500;font-size:11px;margin-top:3px;letter-spacing:.03em}
   nav a{display:flex;justify-content:space-between;align-items:center;color:var(--ink2);
-        text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13.5px;margin-top:2px}
-  nav a:hover{background:var(--panel);color:var(--ink)}
-  nav a.on{background:var(--accent-soft);color:var(--accent);font-weight:550}
-  nav .n{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
-  nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);
+        text-decoration:none;padding:7px 10px;border-radius:var(--r);font-size:13.5px;margin-top:2px;
+        border:1.5px solid transparent}
+  nav a:hover{border-color:var(--line2)}
+  /* the active tab is stamped with the halftone screen — a printed
+     "you are here" panel instead of a flat tint. */
+  nav a.on{background-image:var(--dots);background-size:var(--dots-size);background-color:var(--accent-soft);
+           color:var(--ink);font-weight:700;border-color:var(--line)}
+  nav .n{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:600}
+  nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);font-weight:700;
            padding:16px 10px 4px}
   main{flex:1;min-width:0;height:100vh;overflow-y:auto;padding:0 40px 32px}
-  .pagehead{position:sticky;top:0;z-index:6;background:var(--bg);padding:28px 0 10px;
-            border-bottom:1px solid var(--line);margin-bottom:18px}
+  .pagehead{position:sticky;top:0;z-index:6;background:var(--bg);padding:28px 0 12px;
+            border-bottom:var(--bw) solid var(--line);margin-bottom:18px}
   /* in-page sub-tabs (Memory pillars, Data tables) — keep each section short */
-  .subtabs{display:flex;gap:2px;flex-wrap:wrap;margin:0 0 18px;border-bottom:1px solid var(--line)}
+  .subtabs{display:flex;gap:2px;flex-wrap:wrap;margin:0 0 18px;border-bottom:var(--bw) solid var(--line)}
   .subtab{padding:8px 14px;font-size:13px;color:var(--ink2);cursor:pointer;text-decoration:none;
-          border-bottom:2px solid transparent;white-space:nowrap}
+          border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-2px;font-weight:600}
   .subtab:hover{color:var(--ink)}
-  .subtab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:550}
+  .subtab.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:800}
   .subtab .n{font-size:11px;color:var(--ink3);margin-left:5px}
   /* long tables scroll within their own box, header pinned */
-  .scrolly{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+  .scrolly{max-height:62vh;overflow:auto;border:var(--bw) solid var(--line);border-radius:var(--r);background:var(--panel)}
   .scrolly table{border:none}
   .scrolly th{position:sticky;top:0;background:var(--panel);z-index:1}
-  /* aligned schema: the column header IS the indigo chip, so labels line up
+  /* aligned schema: the column header IS the chip, so labels line up
      over their data (no separate, misaligned chip row). */
-  .scrolly th.dbcol{color:var(--accent);background:var(--accent-soft);font-family:var(--mono);
-                    font-size:11px;text-transform:none;letter-spacing:0;font-weight:600;border-bottom:1px solid var(--line)}
+  .scrolly th.dbcol{color:var(--ink);background:var(--accent-soft);font-family:var(--mono);
+                    font-size:11px;text-transform:none;letter-spacing:0;font-weight:700;border-bottom:var(--bw) solid var(--line)}
   .scrolly th.dbcol small{color:var(--ink3);font-weight:400;margin-left:5px}
-  h1{font-size:17px;font-weight:600;margin-bottom:2px}
+  h1{font-size:19px;font-weight:800;margin-bottom:2px;letter-spacing:-.01em}
   .sub{color:var(--ink3);font-size:12px;font-family:var(--mono)}
-  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink2);
-     font-weight:600;margin:28px 0 10px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);
+     font-weight:800;margin:28px 0 10px;padding-bottom:6px;border-bottom:1.5px solid var(--line)}
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
-  .tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
-  .tile b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;display:block}
-  .tile span{color:var(--ink2);font-size:11.5px}
+  .tile{background:var(--panel);border:var(--bw) solid var(--line);border-radius:var(--r);padding:12px 14px}
+  .tile b{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;display:block;letter-spacing:-.02em}
+  .tile span{color:var(--ink2);font-size:11.5px;font-weight:500}
   .map{display:flex;flex-direction:column;gap:10px;margin-top:6px}
   .lane{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
   .lane-label{width:86px;flex-shrink:0;color:var(--ink3);font-size:11px;text-transform:uppercase;
-              letter-spacing:.07em;padding-top:14px}
-  .box{background:var(--panel);border:1px solid var(--line);border-radius:8px;
-       padding:10px 14px;cursor:pointer;min-width:118px;transition:border-color .1s}
-  .box:hover{border-color:var(--accent)}
-  .box b{font-size:13px;font-weight:550;display:block}
+              letter-spacing:.07em;padding-top:14px;font-weight:700}
+  .box{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);
+       padding:10px 14px;cursor:pointer;min-width:118px;transition:border-color .1s,border-width .1s}
+  .box:hover{border-color:var(--ink);border-width:var(--bw)}
+  .box b{font-size:13px;font-weight:700;display:block}
   .box span{color:var(--ink2);font-size:11.5px}
   .arrow{align-self:center;color:var(--ink3);padding:0 8px;font-size:13px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  .card{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);
         padding:14px 16px;margin-bottom:10px}
-  .badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;
-         border:1px solid var(--line2);color:var(--ink2);margin-right:8px}
-  .badge.retrieve{border-color:var(--accent);color:var(--accent)}
-  .pill{font-size:11.5px;padding:2px 9px;border-radius:99px;font-weight:600}
-  .pill.pass{background:var(--good-soft);color:var(--good)}
-  .pill.fail{background:var(--bad-soft);color:var(--bad)}
-  .pill.skip{background:var(--accent-soft);color:var(--accent)}
-  .u{font-weight:550}
+  .badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:var(--rpill);
+         border:1.5px solid var(--line2);color:var(--ink2);margin-right:8px;font-weight:600}
+  .badge.retrieve{border-color:var(--ink);color:var(--ink);font-weight:700}
+  /* no color left to carry meaning, so pass/fail/skip are told apart by
+     fill: solid-filled = pass, dashed outline = fail, flat gray = neutral. */
+  .pill{font-size:11.5px;padding:2px 9px;border-radius:var(--rpill);font-weight:700;border:1.5px solid transparent}
+  .pill.pass{background:var(--ink);color:var(--bg)}
+  .pill.fail{background:transparent;color:var(--ink);border-style:dashed;border-color:var(--ink)}
+  .pill.skip{background:var(--accent-soft);color:var(--ink2);border-color:var(--line2)}
+  .u{font-weight:700}
   .r{color:var(--ink2);white-space:pre-wrap;margin-top:6px}
   /* rendered markdown in chat replies (blocks handle their own spacing, so
      they read as normal HTML, not pre-wrapped source) */
   .r .mdp,.r .mdh,.r .mdlist,.r .mdtable{white-space:normal}
   .r .mdp{margin:0 0 8px} .r .mdp:last-child{margin-bottom:0}
-  .r .mdh{font-weight:650;color:var(--ink);margin:10px 0 4px}
+  .r .mdh{font-weight:800;color:var(--ink);margin:10px 0 4px}
   .r .mdlist{margin:4px 0 8px;padding-left:20px} .r .mdlist li{margin:2px 0}
-  .r strong{font-weight:650;color:var(--ink)} .r em{font-style:italic}
-  .r a{color:var(--accent);text-decoration:underline}
+  .r strong{font-weight:800;color:var(--ink)} .r em{font-style:italic}
+  .r a{color:var(--ink);text-decoration:underline}
   .r .mdtable{border-collapse:collapse;margin:8px 0;font-size:12.5px;width:100%;display:block;overflow-x:auto}
   .r .mdtable th,.r .mdtable td{border:1px solid var(--line2);padding:5px 8px;text-align:left;white-space:nowrap}
-  .r .mdtable th{background:var(--bg);font-weight:600;color:var(--ink)}
+  .r .mdtable th{background:var(--accent-soft);font-weight:700;color:var(--ink)}
   .meta{color:var(--ink3);font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
-  .tool{border:1px solid var(--line);border-radius:7px;padding:8px 10px;margin-top:8px;background:var(--bg)}
-  .tool.error{border-color:var(--bad);background:var(--bad-soft)}
+  .tool{border:1.5px solid var(--line);border-radius:var(--r);padding:8px 10px;margin-top:8px;background:var(--bg)}
+  .tool.error{border-color:var(--ink);border-style:dashed;background:var(--panel)}
   .tool.warn{border-color:var(--line2)}
   .tool-head{display:flex;align-items:center;gap:8px;font-size:12.5px}
-  .dot{width:7px;height:7px;border-radius:99px;flex-shrink:0;background:var(--good)}
-  .dot.error{background:var(--bad)} .dot.warn{background:#c8951f}
+  /* dot: filled = ok, ringed = error, hollow = warn — shape carries the
+     signal that color used to. */
+  .dot{width:7px;height:7px;border-radius:99px;flex-shrink:0;background:var(--ink)}
+  .dot.error{background:var(--ink);box-shadow:0 0 0 2px var(--line2)}
+  .dot.warn{background:transparent;border:1.5px solid var(--ink2)}
   .tool code{border:none;background:transparent;padding:0;color:var(--ink)}
   .tool details{margin-top:6px}
   .tool summary{font-size:11px;color:var(--ink3);cursor:pointer;list-style:none}
@@ -112,290 +136,312 @@
             word-break:break-all;margin-top:6px;max-height:180px;overflow:auto}
   .live{display:inline-flex;align-items:center;gap:6px}
   .live .dot{animation:pulse 2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   /* streaming caret — the token-by-token "thinking" cursor */
   .caret{display:inline-block;width:7px;height:14px;margin-left:2px;vertical-align:text-bottom;
-         background:var(--accent);border-radius:1px;animation:blink 1s step-start infinite}
+         background:var(--ink);border-radius:0;animation:blink 1s step-start infinite}
   @keyframes blink{50%{opacity:0}}
   @media (prefers-reduced-motion:reduce){.caret{animation:none}}
-  .splitbar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin-top:2px}
-  .splitbar div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;min-width:0;overflow:hidden;white-space:nowrap}
-  .seg-skip{background:var(--accent)} .seg-ret{background:#c8951f}
-  .tile b.money{color:var(--good)}
+  .splitbar{display:flex;height:26px;border-radius:var(--r);overflow:hidden;border:var(--bw) solid var(--line);margin-top:2px}
+  .splitbar div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;min-width:0;overflow:hidden;white-space:nowrap}
+  /* skip = solid fill (the gate did nothing, the fast path); retrieve = a
+     diagonal hatch (it went and did work) — a texture difference reads at a
+     glance without needing color. */
+  .seg-skip{background:var(--ink);color:var(--bg)}
+  .seg-ret{background:repeating-linear-gradient(135deg,var(--ink2) 0 5px,var(--panel) 5px 10px);color:var(--ink)}
+  .tile b.money{color:var(--ink)}
   .arch{width:100%;min-width:760px;height:auto;font-family:-apple-system,system-ui,sans-serif}
-  .arch .container{fill:none;stroke:var(--line2);stroke-dasharray:5 4}
-  /* LLM Ops is a SEPARATE system (offline, improves the agent) — a solid
-     tinted panel so it never reads as part of the ephemeral Harness. */
-  .arch .container.ops{fill:var(--accent-soft);opacity:.5;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:none}
-  .arch .bx{fill:var(--panel);stroke:var(--line);stroke-width:1}
+  .arch .container{fill:none;stroke:var(--line2);stroke-dasharray:5 4;stroke-width:1.5}
+  /* LLM Ops is a SEPARATE system (offline, improves the agent) — the
+     halftone screen marks it as its own printed panel, distinct from the
+     ephemeral Harness around it. */
+  .arch .container.ops{fill:var(--panel);opacity:1;stroke:var(--ink);stroke-width:var(--bw);stroke-dasharray:none}
+  .arch .bx{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
   .arch .node{cursor:pointer}
-  .arch .node:hover .bx{stroke:var(--accent);stroke-width:1.5}
-  .arch .loopbox{fill:none;stroke:var(--accent);stroke-width:1.5}
-  .arch .memgroup{fill:var(--accent-soft);opacity:.4;stroke:var(--line2);stroke-width:1;stroke-dasharray:5 4}
-  .arch .gate{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2}
-  .arch .nt{fill:var(--ink);font-size:14px;font-weight:600}
+  .arch .node:hover .bx{stroke:var(--ink);stroke-width:2.2}
+  .arch .loopbox{fill:none;stroke:var(--ink);stroke-width:2}
+  .arch .memgroup{fill:var(--accent-soft);opacity:1;stroke:var(--line2);stroke-width:1.5;stroke-dasharray:5 4}
+  .arch .gate{fill:var(--accent-soft);stroke:var(--ink);stroke-width:1.6}
+  .arch .nt{fill:var(--ink);font-size:14px;font-weight:700}
   .arch .ns{fill:var(--ink2);font-size:11.5px}
-  .arch .grp{fill:var(--ink3);font-size:11px;font-weight:700;letter-spacing:.06em}
+  .arch .grp{fill:var(--ink);font-size:11px;font-weight:800;letter-spacing:.06em}
   .arch .fl{fill:var(--ink3);font-size:10.5px}
-  .arch .flow{fill:none;stroke:var(--ink3);stroke-width:1.3;marker-end:url(#arr)}
-  .arch .flow.dash{stroke-dasharray:4 3;opacity:.75}
-  .arch .head{fill:var(--ink3)}
+  .arch .flow{fill:none;stroke:var(--ink3);stroke-width:1.5;marker-end:url(#arr)}
+  .arch .flow.dash{stroke-dasharray:4 3;opacity:.85}
+  .arch .head{fill:var(--ink)}
   /* live animation: node lights up (fill+stroke) + flowing edge (n8n-style).
      drop-shadow(var()) is unreliable on SVG, so we light the fill instead. */
   .arch .bx{transition:stroke .15s ease, fill .15s ease, stroke-width .15s ease}
-  .arch .node.hot .bx{stroke:var(--accent) !important;stroke-width:2.6;fill:var(--accent-soft) !important}
+  /* hot (working) is the darkest, boldest state on the whole page; done
+     (just finished) settles to a lighter gray — intensity carries "how
+     active is this right now" now that hot/done can't be two hues. */
+  .arch .node.hot .bx{stroke:var(--ink) !important;stroke-width:3;fill:var(--accent-soft) !important}
   /* A node holds .hot for as long as it is WORKING, then flashes .done. Held
      rather than pulsed because four nodes in one wave lit together is the
      thing worth seeing, and a pulse on completion shows the opposite. */
-  .arch .node.done .bx{stroke:var(--good) !important;stroke-width:2.2;fill:var(--good-soft) !important}
+  .arch .node.done .bx{stroke:var(--ink3) !important;stroke-width:2;fill:var(--panel) !important}
   .arch .gate{transition:stroke .15s ease, stroke-width .15s ease}
-  .arch .gate.hot{stroke:var(--accent) !important;stroke-width:4}
-  .arch .flow.live{stroke:var(--accent) !important;stroke-width:2.6;opacity:1;stroke-dasharray:6 5;
+  .arch .gate.hot{stroke:var(--ink) !important;stroke-width:4.5}
+  .arch .flow.live{stroke:var(--ink) !important;stroke-width:3;opacity:1;stroke-dasharray:6 5;
                    animation:flowdash .5s linear infinite}
   @keyframes flowdash{to{stroke-dashoffset:-22}}
-  .arch-status{font-size:11px;font-weight:600;color:var(--accent);text-transform:none;
+  .arch-status{font-size:11px;font-weight:700;color:var(--ink);text-transform:none;
                letter-spacing:0;margin-left:10px}
   .arch-status .live-dot{display:inline-block;width:7px;height:7px;border-radius:99px;
-               background:var(--accent);margin-right:5px;vertical-align:middle;animation:pulse 1s ease-in-out infinite}
+               background:var(--ink);margin-right:5px;vertical-align:middle;animation:pulse 1s ease-in-out infinite}
   @media (prefers-reduced-motion:reduce){.arch .flow.live{animation:none}.arch-status .live-dot{animation:none}}
   .convo{display:flex;flex-direction:column;gap:8px}
-  .msg{border:1px solid var(--line);border-radius:9px;padding:10px 13px;max-width:78%}
-  .msg.user{align-self:flex-end;background:var(--accent-soft);border-color:transparent}
+  .msg{border:1.5px solid var(--line);border-radius:var(--r);padding:10px 13px;max-width:78%}
+  .msg.user{align-self:flex-end;background:var(--accent-soft);border-color:var(--line)}
   .msg.assistant{align-self:flex-start;background:var(--panel)}
-  .msg .who{font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+  .msg .who{font-size:11px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
   .msg .mtext{font-size:13.5px;white-space:pre-wrap;color:var(--ink)}
-  .chip-c{display:inline-block;font-size:9.5px;font-weight:600;padding:1px 6px;border-radius:99px;
-          background:var(--good-soft);color:var(--good);text-transform:none;letter-spacing:0;vertical-align:middle}
+  .chip-c{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:var(--rpill);
+          background:var(--accent-soft);color:var(--ink);text-transform:none;letter-spacing:0;vertical-align:middle;border:1px solid var(--line2)}
   .cols{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-  .col-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:5px;
-            background:var(--accent-soft);color:var(--accent);border:1px solid var(--line)}
+  .col-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:var(--r);
+            background:var(--accent-soft);color:var(--ink);border:1.5px solid var(--line)}
   .dbcell{font-family:var(--mono);font-size:11.5px;color:var(--ink2);max-width:240px;overflow:hidden;text-overflow:ellipsis}
-  .reveal{color:var(--accent);cursor:pointer;font-weight:500;border-bottom:1px dashed var(--accent);padding-bottom:1px}
+  .reveal{color:var(--ink);cursor:pointer;font-weight:600;border-bottom:1px dashed var(--ink);padding-bottom:1px}
   .reveal:hover{border-bottom-style:solid}
-  .reveal.del{color:var(--bad);border-color:var(--bad)}
-  .editor{width:100%;min-height:120px;background:var(--bg);border:1px solid var(--line2);border-radius:8px;
+  /* delete is destructive, so it gets a heavier, permanently-solid underline
+     instead of a hue — the weight signals "careful" without needing red. */
+  .reveal.del{color:var(--ink);border-bottom-style:solid;font-weight:800}
+  .editor{width:100%;min-height:120px;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);
           padding:10px 12px;color:var(--ink);font:13px/1.5 var(--mono);resize:vertical;outline:none}
-  .editor:focus{border-color:var(--accent)}
+  .editor:focus{border-color:var(--ink);border-width:var(--bw)}
   tr .editor{min-height:52px}
-  .save{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-weight:600;font-size:13px;cursor:pointer}
+  .save{background:var(--ink);color:var(--bg);border:1.5px solid var(--ink);border-radius:var(--r);padding:8px 16px;
+        font-weight:700;font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
   /* dirty-state: a save button is muted until there's an unsaved change */
-  .save:disabled{opacity:.4;cursor:default}
-  .save.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line2)}
+  .save:disabled{opacity:.35;cursor:default}
+  .save.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line2)}
   /* Tools tab: capability cards grouped by origin */
-  .toolcard{border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin-bottom:8px;background:var(--panel)}
-  .toolcard .tn{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink)}
+  .toolcard{border:1.5px solid var(--line);border-radius:var(--r);padding:10px 13px;margin-bottom:8px;background:var(--panel)}
+  .toolcard .tn{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink)}
   .toolcard .td{color:var(--ink2);font-size:12px;margin-top:3px}
-  .srcpill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-           padding:1px 7px;border-radius:99px;background:var(--accent-soft);color:var(--accent);margin-left:8px;vertical-align:middle}
-  .srcpill.mcp{background:var(--good-soft);color:var(--good)}
-  .srcpill.apple{background:#0000;border:1px solid var(--line2);color:var(--ink2)}
-  /* read-only SQL console (the Supabase-editor idea, scoped down) */
-  .sqlbox{width:100%;min-height:70px;background:#0b0b0d;color:#d6d7de;border:1px solid var(--line2);
-          border-radius:8px;padding:11px 13px;font:12.5px/1.5 var(--mono);resize:vertical;outline:none}
-  @media (prefers-color-scheme:light){.sqlbox{background:#1c1c20;color:#e6e6ea}}
-  .sqlbox:focus{border-color:var(--accent)}
-  .qexample{font-family:var(--mono);font-size:11.5px;color:var(--accent);cursor:pointer;border-bottom:1px dashed var(--accent)}
+  .srcpill{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+           padding:1px 7px;border-radius:var(--rpill);background:var(--accent-soft);color:var(--ink);margin-left:8px;vertical-align:middle;
+           border:1px solid var(--line2)}
+  /* built-in tools are filled (the default .srcpill above); anything
+     external (MCP, Apple) is outlined only — origin, not status, so it
+     doesn't need its own hue, just a different weight of emphasis. */
+  .srcpill.mcp{background:transparent;border:1.5px solid var(--ink2);color:var(--ink2)}
+  .srcpill.apple{background:#0000;border:1.5px solid var(--line2);color:var(--ink2)}
+  /* read-only SQL console — deliberately the one inverted surface on the
+     page (a lit terminal on a printed page), so it still reads instantly
+     as "typed input", not another panel. */
+  .sqlbox{width:100%;min-height:70px;background:#0a0a0a;color:#eaeae6;border:1.5px solid var(--line2);
+          border-radius:var(--r);padding:11px 13px;font:12.5px/1.5 var(--mono);resize:vertical;outline:none}
+  @media (prefers-color-scheme:dark){.sqlbox{background:#000;color:#f2f2f0;border-color:var(--line2)}}
+  .sqlbox:focus{border-color:var(--ink)}
+  .qexample{font-family:var(--mono);font-size:11.5px;color:var(--ink);cursor:pointer;border-bottom:1px dashed var(--ink)}
   /* session picker in the chat surfaces */
   .sesshead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .sessbtn{background:var(--panel);border:1px solid var(--line2);border-radius:7px;color:var(--ink2);
-           padding:5px 11px;font-size:12.5px;cursor:pointer}
-  .sessbtn:hover{border-color:var(--accent);color:var(--accent)}
-  .teletoggle.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .sessbtn{background:var(--panel);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--ink);
+           padding:5px 11px;font-size:12.5px;cursor:pointer;font-weight:600}
+  .sessbtn:hover{border-color:var(--ink)}
+  .teletoggle.on{border-color:var(--ink);color:var(--ink);background:var(--accent-soft)}
   /* per-turn stats (gate/seconds/iters/tools) hide together when toggled off */
   body.no-tele .chatlog .tele{display:none}
-  .sessmenu{position:absolute;z-index:30;background:var(--panel);border:1px solid var(--line2);border-radius:10px;
-            box-shadow:0 8px 30px rgba(0,0,0,.28);width:300px;max-height:340px;overflow-y:auto;padding:6px}
+  .sessmenu{position:absolute;z-index:30;background:var(--panel);border:var(--bw) solid var(--line);border-radius:var(--r);
+            box-shadow:5px 5px 0 var(--line);width:300px;max-height:340px;overflow-y:auto;padding:6px}
   /* mini model switcher: a pill in the chat header + its dropdown */
   .modelchip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;max-width:150px;
-             background:var(--accent-soft);border:1px solid var(--line2);border-radius:99px;
+             background:var(--accent-soft);border:1.5px solid var(--line2);border-radius:var(--rpill);
              color:var(--ink);padding:4px 9px;font-size:12px;cursor:pointer;line-height:1.2}
-  .modelchip:hover{border-color:var(--accent)}
-  .modelchip .mc-dot{width:6px;height:6px;border-radius:99px;background:var(--good);flex-shrink:0}
+  .modelchip:hover{border-color:var(--ink)}
+  .modelchip .mc-dot{width:6px;height:6px;border-radius:99px;background:var(--ink);flex-shrink:0}
   .modelchip .mc-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
                       font-family:var(--mono);font-size:11px}
   .modelchip .mc-caret{color:var(--ink3);font-size:9px;flex-shrink:0}
   .modelmenu{width:250px}
-  .modelmenu .mm-h{font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:5px 10px 4px}
+  .modelmenu .mm-h{font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:5px 10px 4px;font-weight:700}
   .modelmenu .mm-load{padding:8px 10px;color:var(--ink3);font-size:12px}
   .modelmenu .mm-id{font-family:var(--mono);font-size:12px}
-  .modelmenu .mm-free{font-size:9.5px;color:var(--good);border:1px solid var(--good);border-radius:99px;
-                      padding:0 5px;margin-left:6px;vertical-align:1px}
-  .modelmenu .mm-f{font-size:11px;color:var(--ink3);padding:8px 10px 4px;border-top:1px solid var(--line);margin-top:4px}
+  .modelmenu .mm-free{font-size:9.5px;color:var(--ink);border:1.5px solid var(--ink);border-radius:var(--rpill);
+                      padding:0 5px;margin-left:6px;vertical-align:1px;font-weight:700}
+  .modelmenu .mm-f{font-size:11px;color:var(--ink3);padding:8px 10px 4px;border-top:1.5px solid var(--line);margin-top:4px}
   .modelmenu .mm-f code{font-size:11px;background:none;padding:0}
-  .modelmenu .mm-f a{color:var(--accent);text-decoration:none}
+  .modelmenu .mm-f a{color:var(--ink);text-decoration:none}
   .modelmenu .mm-prov{font-size:9.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-right:5px}
-  .modelmenu .mm-def{font-size:9.5px;color:var(--accent);border:1px solid var(--accent);border-radius:99px;
-                     padding:0 5px;margin-left:6px;vertical-align:1px}
+  .modelmenu .mm-def{font-size:9.5px;color:var(--ink);border:1.5px solid var(--ink);border-radius:var(--rpill);
+                     padding:0 5px;margin-left:6px;vertical-align:1px;font-weight:700}
   .pinrow{display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:12.5px;border-bottom:1px solid var(--line)}
   .pinrow:last-of-type{border-bottom:none}
-  .pinrow.on{background:var(--accent-soft);border-radius:7px;padding-left:8px;padding-right:8px}
+  .pinrow.on{background:var(--accent-soft);border-radius:var(--r);padding-left:8px;padding-right:8px}
   .pinrow .mm-prov{font-size:9.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;min-width:64px}
   .pinstar{cursor:pointer;color:var(--ink3);font-size:15px;line-height:1;text-decoration:none;flex-shrink:0}
-  .pinstar.on{color:var(--accent)}
-  .pinstar:hover{color:var(--accent)}
+  .pinstar.on{color:var(--ink)}
+  .pinstar:hover{color:var(--ink)}
   .addmodel{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  .addmodel select{background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;
+  .addmodel select{background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:8px 10px;
           color:var(--ink);font-size:13px;outline:none;max-width:100%}
   .addmodel #add-model{flex:1;min-width:180px}
-  .addmodel input{flex:1;min-width:180px;background:var(--bg);border:1px solid var(--line2);border-radius:8px;
+  .addmodel input{flex:1;min-width:180px;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);
           padding:8px 12px;color:var(--ink);font-size:13px;outline:none}
-  .addmodel select:focus,.addmodel input:focus{border-color:var(--accent)}
-  .sessitem{padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12.5px}
+  .addmodel select:focus,.addmodel input:focus{border-color:var(--ink)}
+  .sessitem{padding:8px 10px;border-radius:var(--r);cursor:pointer;font-size:12.5px}
   .sessitem:hover{background:var(--accent-soft)}
-  .sessitem.on{background:var(--accent-soft);color:var(--accent)}
+  .sessitem.on{background:var(--accent-soft);color:var(--ink);font-weight:700}
   .sessitem .sm{color:var(--ink3);font-size:11px;margin-top:2px}
   .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:12.5px;color:var(--ink2)}
-  .fld input,.fld select{background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:9px 12px;
+  .fld input,.fld select{background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:9px 12px;
           color:var(--ink);font-size:13.5px;outline:none}
-  .fld input:focus,.fld select:focus{border-color:var(--accent)}
+  .fld input:focus,.fld select:focus{border-color:var(--ink)}
   .cat-controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-  .cat-controls input[type=text]{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line2);
-          border-radius:8px;padding:8px 12px;color:var(--ink);font-size:13.5px;outline:none}
-  .cat-controls input[type=text]:focus{border-color:var(--accent)}
-  .cat-controls input[type=checkbox],#catalog input[type=checkbox]{accent-color:var(--accent)}
+  .cat-controls input[type=text]{flex:1;min-width:160px;background:var(--bg);border:1.5px solid var(--line2);
+          border-radius:var(--r);padding:8px 12px;color:var(--ink);font-size:13.5px;outline:none}
+  .cat-controls input[type=text]:focus{border-color:var(--ink)}
+  .cat-controls input[type=checkbox],#catalog input[type=checkbox]{accent-color:var(--ink)}
   details.adv{margin:2px 0 10px}
   details.adv>summary{cursor:pointer;font-size:12.5px;color:var(--ink2)}
   details.adv[open]>summary{margin-bottom:8px}
-  .watchhead{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink2);font-weight:600;margin-bottom:8px}
-  .chat-arch{max-width:600px;margin:0 auto 16px;border:1px solid var(--line);border-radius:12px;
+  .watchhead{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink);font-weight:800;margin-bottom:8px}
+  .chat-arch{max-width:600px;margin:0 auto 16px;border:var(--bw) solid var(--line);border-radius:var(--r);
              padding:8px;background:var(--panel);position:sticky;top:96px;z-index:3}
   .chat-arch svg{min-width:0;width:100%;height:auto}
   .chatlog{display:flex;flex-direction:column;gap:10px}
-  .bubble{align-self:flex-end;background:var(--accent);color:#fff;padding:8px 13px;
-          border-radius:14px 14px 3px 14px;max-width:75%;font-size:13.5px}
-  .chatbar{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--line);
+  .bubble{align-self:flex-end;background:var(--ink);color:var(--bg);padding:8px 13px;
+          border-radius:var(--r) var(--r) 2px var(--r);max-width:75%;font-size:13.5px}
+  .chatbar{display:flex;gap:10px;padding:12px 0;border-top:var(--bw) solid var(--line);
            background:var(--bg);position:sticky;bottom:0}
   /* the chat side-dock: chat from any tab, watch the harness in main */
-  #dock{width:var(--dock-w,380px);flex-shrink:0;border-left:1px solid var(--line);
+  #dock{width:var(--dock-w,380px);flex-shrink:0;border-left:var(--bw) solid var(--line);
         height:100vh;display:flex;flex-direction:column;background:var(--bg);padding:0 14px}
   /* gateway source tags (which channel a message came in through) */
-  .gwtag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-         padding:1px 6px;border-radius:99px;vertical-align:middle;margin-left:6px;
-         border:1px solid var(--line2);color:var(--ink2)}
-  .gwtag.dashboard{color:var(--accent);border-color:var(--accent)}
-  .gwtag.telegram{color:#2b90c6;border-color:#2b90c6}
-  .gwtag.voice{color:#22a06b;border-color:#22a06b}
-  .gwtag.brief{color:#b0870f;border-color:#b0870f}
-  #mic{background:var(--panel);border:1px solid var(--line2);border-radius:8px;color:var(--ink2);
+  .gwtag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+         padding:1px 6px;border-radius:var(--rpill);vertical-align:middle;margin-left:6px;
+         border:1.5px solid var(--line2);color:var(--ink2)}
+  /* the label text already names the channel (DASHBOARD/TELEGRAM/VOICE/
+     BRIEF), so these were only ever decorative color — one flat style. */
+  .gwtag.dashboard,.gwtag.telegram,.gwtag.voice,.gwtag.brief{color:var(--ink2);border-color:var(--line2)}
+  #mic{background:var(--panel);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--ink2);
        padding:0 12px;cursor:pointer;font-size:15px}
-  #mic:hover{border-color:var(--accent);color:var(--accent)}
-  #mic.rec{background:var(--bad);color:#fff;border-color:var(--bad);animation:pulse 1s infinite}
+  #mic:hover{border-color:var(--ink);color:var(--ink)}
+  #mic.rec{background:var(--ink);color:var(--bg);border-color:var(--ink);animation:pulse 1s infinite}
   .dockhead{display:flex;align-items:center;gap:10px;padding:18px 2px 10px;
-            border-bottom:1px solid var(--line)}
-  .dockhead .dt{font-weight:650;font-size:14px}
+            border-bottom:var(--bw) solid var(--line)}
+  .dockhead .dt{font-weight:800;font-size:14px}
   .dockhead .arch-status{flex:1}
-  #dock-close{background:none;border:1px solid var(--line2);border-radius:6px;color:var(--ink2);
+  #dock-close{background:none;border:1.5px solid var(--line2);border-radius:var(--r);color:var(--ink);
               width:24px;height:24px;cursor:pointer;font-size:14px;line-height:1}
   #dock .chatlog{flex:1;overflow-y:auto;padding:12px 2px}
   #dock .chatbar{padding:12px 0 16px}
   #dock-reopen{display:none;position:fixed;bottom:16px;right:16px;z-index:20;
-               background:var(--accent);color:#fff;border:none;border-radius:99px;
-               padding:9px 16px;font-weight:600;font-size:13px;cursor:pointer;
-               box-shadow:0 2px 10px rgba(0,0,0,.25)}
+               background:var(--ink);color:var(--bg);border:var(--bw) solid var(--ink);border-radius:var(--rpill);
+               padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;
+               box-shadow:3px 3px 0 var(--line2);text-transform:uppercase;letter-spacing:.03em}
   body.dock-closed #dock,body.dock-closed #dock-resizer{display:none}
   body.dock-closed #dock-reopen{display:block}
-  .chatbar input{flex:1;background:var(--panel);border:1px solid var(--line2);border-radius:8px;
+  .chatbar input{flex:1;background:var(--panel);border:1.5px solid var(--line2);border-radius:var(--r);
                  padding:10px 14px;color:var(--ink);font-size:14px;outline:none}
-  .chatbar input:focus{border-color:var(--accent)}
-  .chatbar button{background:var(--accent);color:#fff;border:none;border-radius:8px;
-                  padding:0 18px;font-weight:600;font-size:13.5px;cursor:pointer}
-  .chatbar button:disabled{opacity:.5;cursor:default}
+  .chatbar input:focus{border-color:var(--ink)}
+  .chatbar button{background:var(--ink);color:var(--bg);border:1.5px solid var(--ink);border-radius:var(--r);
+                  padding:0 18px;font-weight:700;font-size:13.5px;cursor:pointer;text-transform:uppercase;letter-spacing:.03em}
+  .chatbar button:disabled{opacity:.4;cursor:default}
   .stages{display:flex;gap:6px;margin:2px 0 4px}
-  .stage{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid var(--line2);color:var(--ink3)}
-  .stage.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-  .stage.done{border-color:var(--good);color:var(--good)}
-  .stage.subagent{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .stage{font-size:11px;padding:2px 9px;border-radius:var(--rpill);border:1.5px solid var(--line2);color:var(--ink3);font-weight:600}
+  .stage.on{border-color:var(--ink);color:var(--ink);background:var(--accent-soft)}
+  .stage.done{border-color:var(--ink2);color:var(--ink2)}
+  .stage.subagent{border-color:var(--ink);color:var(--ink);background:var(--accent-soft);font-weight:700}
   table{width:100%;border-collapse:collapse;font-size:13px}
   td,th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
   tr:last-child td{border-bottom:none}
-  th{color:var(--ink3);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+  th{color:var(--ink);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800}
   .empty{color:var(--ink3);font-style:normal;font-size:13px}
-  code{font-family:var(--mono);font-size:12px;background:var(--bg);border:1px solid var(--line);
-       padding:1px 5px;border-radius:4px}
+  code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);border:1px solid var(--line2);
+       padding:1px 5px;border-radius:2px}
   /* Model arena (Compare tab): message + model picks, then a scrolling row of
      one result column per model. */
-  .cmp-input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:8px;
+  .cmp-input{width:100%;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);
        padding:10px 12px;color:var(--ink);font-size:13.5px;font-family:inherit;outline:none;resize:vertical}
-  .cmp-input:focus{border-color:var(--accent)}
+  .cmp-input:focus{border-color:var(--ink)}
   .cmp-picks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
   .cmp-pick{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2);
-       border:1px solid var(--line2);border-radius:99px;padding:4px 10px;cursor:pointer}
-  .cmp-pick.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+       border:1.5px solid var(--line2);border-radius:var(--rpill);padding:4px 10px;cursor:pointer}
+  .cmp-pick.on{border-color:var(--ink);color:var(--ink);background:var(--accent-soft)}
   .cmp-pick input{margin:0}
   /* Responsive: as many ~300px columns as fit, then wrap to the next row. */
   .cmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
        gap:12px;margin-top:12px;align-items:start}
-  .cmp-col{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  .cmp-col{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);
        padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-  .cmp-col.err{border-color:var(--bad)}
+  .cmp-col.err{border-color:var(--ink);border-style:dashed}
   /* One wave's nodes all start together, so every bar shares a left edge and
      ends where that node finished. Four bars of different lengths from the same
      origin IS the wave — the topology chart above can only promise it. */
-  .wavebar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-  .wavebar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  .wavebar{height:6px;background:var(--accent-soft);border-radius:var(--r);overflow:hidden;border:1px solid var(--line2)}
+  .wavebar i{display:block;height:100%;background:var(--ink);border-radius:0}
   .cmp-h{display:flex;align-items:center;gap:6px;font-size:13px}
   .cmp-stats{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-  .chip{font-size:11px;color:var(--ink2);border:1px solid var(--line2);border-radius:99px;padding:1px 8px}
-  .chip.money{color:var(--good);border-color:var(--good)}
+  .chip{font-size:11px;color:var(--ink2);border:1.5px solid var(--line2);border-radius:var(--rpill);padding:1px 8px}
+  .chip.money{color:var(--ink);border-color:var(--ink2);font-weight:700}
   /* A graph node's chip while it WORKS, and after. Several .live at once is
      the fan-out made visible in the chat card — the pending state used to say
      only "thinking…" for the whole thirteen seconds of a gather. */
-  .chip.live{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-  .chip.err{color:var(--bad);border-color:var(--bad)}
-  .chip.sorted{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .chip.live{color:var(--ink);border-color:var(--ink);background:var(--accent-soft);font-weight:700}
+  .chip.err{color:var(--ink);border-color:var(--ink2);border-style:dashed}
+  .chip.sorted{color:var(--ink);border-color:var(--ink);background:var(--accent-soft);font-weight:700}
   .cmp-reply{margin-top:2px;font-size:13px;max-height:340px;overflow-y:auto}
   .cmp-race{padding:5px 14px;font-size:12.5px}
   .cmp-th{cursor:pointer;white-space:nowrap}
   .cmp-th:hover{color:var(--ink)}
-  .cmp-th.on{color:var(--accent)}
-  .cmp-score{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;
-    font-weight:600;letter-spacing:.02em;white-space:nowrap;vertical-align:middle}
-  .cmp-score.pass{background:var(--good-soft);color:var(--good)}
-  .cmp-score.fail{background:var(--bad-soft);color:var(--bad)}
-  .cmp-score.part{background:#c8951f22;color:#c8951f}
-  .cmp-col.solved{box-shadow:inset 3px 0 0 var(--good)}
-  .cmp-col.failed{box-shadow:inset 3px 0 0 var(--bad)}
-  .cmp-q{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;
-    font-weight:600;white-space:nowrap;vertical-align:middle}
-  .cmp-q.hi{background:var(--good-soft);color:var(--good)}
-  .cmp-q.mid{background:#c8951f22;color:#c8951f}
-  .cmp-q.lo{background:var(--bad-soft);color:var(--bad)}
+  .cmp-th.on{color:var(--ink);font-weight:800}
+  /* three-tier monochrome scale, used for both cmp-score and cmp-q:
+     solid fill = the good end, flat gray = the middle, dashed outline =
+     the bad end. Same convention as .pill above, kept consistent site-wide
+     so a reader only has to learn it once. */
+  .cmp-score{display:inline-block;padding:1px 8px;border-radius:var(--rpill);font-size:11px;
+    font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:middle;border:1.5px solid transparent}
+  .cmp-score.pass{background:var(--ink);color:var(--bg)}
+  .cmp-score.fail{background:transparent;color:var(--ink);border-style:dashed;border-color:var(--ink)}
+  .cmp-score.part{background:var(--accent-soft);color:var(--ink2)}
+  .cmp-col.solved{box-shadow:inset 4px 0 0 var(--ink)}
+  .cmp-col.failed{box-shadow:inset 4px 0 0 var(--line2)}
+  .cmp-q{display:inline-block;padding:1px 8px;border-radius:var(--rpill);font-size:11px;
+    font-weight:700;white-space:nowrap;vertical-align:middle;border:1.5px solid transparent}
+  .cmp-q.hi{background:var(--ink);color:var(--bg)}
+  .cmp-q.mid{background:var(--accent-soft);color:var(--ink2)}
+  .cmp-q.lo{background:transparent;color:var(--ink);border-style:dashed;border-color:var(--ink)}
   .cmp-grade1{margin-left:auto;font-size:11px;white-space:nowrap;flex-shrink:0}
   .cmp-judge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink3);
-    cursor:pointer;white-space:nowrap;padding:4px 8px;border-radius:8px;border:1px solid var(--line)}
-  .cmp-judge.on{color:var(--accent);border-color:var(--accent)}
+    cursor:pointer;white-space:nowrap;padding:4px 8px;border-radius:var(--r);border:1.5px solid var(--line)}
+  .cmp-judge.on{color:var(--ink);border-color:var(--ink)}
   .cmp-judge input{margin:0}
-  .cmp-judge select{font:inherit;font-size:12px;color:var(--ink);background:var(--card);
-    border:1px solid var(--line);border-radius:6px;padding:1px 4px;margin-left:2px;cursor:pointer}
+  .cmp-judge select{font:inherit;font-size:12px;color:var(--ink);background:var(--panel);
+    border:1.5px solid var(--line);border-radius:var(--r);padding:1px 4px;margin-left:2px;cursor:pointer}
   .cmp-judge select:disabled{opacity:.5;cursor:default}
   .scatter{width:100%;height:auto;display:block}
   .scatter text{font-family:inherit}   /* match the page's sans, not SVG's default serif */
-  .scatter .sc-axis{stroke:var(--line);stroke-width:1}
-  .scatter .sc-grid{stroke:var(--line);stroke-width:1;opacity:.4}
+  .scatter .sc-axis{stroke:var(--line);stroke-width:1.5}
+  .scatter .sc-grid{stroke:var(--line);stroke-width:1;opacity:.3}
   .scatter .sc-tick{fill:var(--ink3);font-size:10px}
   /* the y-axis label carries the grading criteria on hover (native <title>) */
   .scatter .sc-ylabel{text-decoration:underline dotted;fill:var(--ink2)}
   /* a wide invisible hit-zone over the y label so the criteria tooltip is easy to hover */
   .scatter .sc-yhit{fill:transparent;cursor:help;pointer-events:all}
   .sc-tip{position:fixed;display:none;z-index:9999;pointer-events:none;max-width:340px;
-    white-space:pre-line;background:var(--panel);color:var(--ink);border:1px solid var(--line);
-    border-radius:8px;padding:8px 11px;font-size:12px;line-height:1.45;
-    box-shadow:0 8px 30px rgba(0,0,0,.28)}
+    white-space:pre-line;background:var(--panel);color:var(--ink);border:var(--bw) solid var(--line);
+    border-radius:var(--r);padding:8px 11px;font-size:12px;line-height:1.45;
+    box-shadow:4px 4px 0 var(--line2)}
   .scatter .sc-lbl{fill:var(--ink2);font-size:10.5px}
-  .scatter .sc-dot.hi{fill:var(--good)}
-  .scatter .sc-dot.mid{fill:#c8951f}
-  .scatter .sc-dot.lo{fill:var(--bad)}
+  /* hi = solid dark dot, mid = solid gray, lo = hollow ring — filled-ness
+     stands in for "how good", same convention as the score pills. */
+  .scatter .sc-dot.hi{fill:var(--ink)}
+  .scatter .sc-dot.mid{fill:var(--ink3)}
+  .scatter .sc-dot.lo{fill:var(--bg);stroke:var(--ink2);stroke-width:1.5}
   .cmp-sortbar{display:flex;align-items:center;gap:6px;margin:2px 0 12px;font-size:12px;color:var(--ink3)}
   .cmp-sortbtn{cursor:pointer;font-size:12px;color:var(--ink2);background:var(--bg);
-       border:1px solid var(--line2);border-radius:99px;padding:3px 12px}
-  .cmp-sortbtn:hover{border-color:var(--accent);color:var(--accent)}
-  .cmp-sortbtn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+       border:1.5px solid var(--line2);border-radius:var(--rpill);padding:3px 12px;font-weight:600}
+  .cmp-sortbtn:hover{border-color:var(--ink);color:var(--ink)}
+  .cmp-sortbtn.on{border-color:var(--ink);color:var(--ink);background:var(--accent-soft);font-weight:800}
 
 /* Sub-agent receipt (Arena cards): pi working inside a card. Live = small
    terminal window; finished = one quiet row, expandable. */
-.subterm{ margin:6px 0; border:1px solid var(--line); border-radius:8px;
+.subterm{ margin:6px 0; border:1.5px solid var(--line); border-radius:var(--r);
   background:var(--bg); font-size:11.5px; overflow:hidden; }
-.subterm.live{ border-color:var(--accent); background:var(--accent-soft); }
+.subterm.live{ border-color:var(--ink); background:var(--accent-soft); }
 .subterm-h{ display:flex; align-items:center; gap:7px; padding:4px 8px;
   color:var(--ink3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   cursor:default; list-style:none; }

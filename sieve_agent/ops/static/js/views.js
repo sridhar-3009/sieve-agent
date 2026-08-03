@@ -16,7 +16,7 @@ function subtabBar(view, tabs, active){
       n!=null?`<span class="n">${n}</span>`:""}</a>`).join("")}</div>`;
 }
 
-// A raw SQLite table, scrollable, with the column names AS the (indigo) sticky
+// A raw SQLite table, scrollable, with the column names AS the sticky
 // headers so the schema lines up over its data instead of floating above it.
 function dbTable(t){
   if (!t.sample.length) return `<div class="card empty">empty — no rows yet</div>`;
